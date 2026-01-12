@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 700">
+  <defs>
+    <style>
+      .title { font: bold 28px sans-serif; fill: #1a1a1a; }
+      .section-title { font: bold 18px sans-serif; fill: #2c3e50; }
+      .subtitle { font: bold 15px sans-serif; fill: #34495e; }
+      .text { font: 13px sans-serif; fill: #2c3e50; }
+      .small-text { font: 11px sans-serif; fill: #555; }
+      .metric { font: bold 14px sans-serif; fill: #e74c3c; }
+      .code { font: 12px monospace; fill: #555; }
+
+      .core-box { fill: #e3f2fd; stroke: #1976d2; stroke-width: 3; }
+      .component-box { fill: #fff3e0; stroke: #f57c00; stroke-width: 2; }
+      .strategy-box { fill: #fce4ec; stroke: #c2185b; stroke-width: 2; }
+      .auxiliary-box { fill: #e8f5e9; stroke: #388e3c; stroke-width: 2; }
+      .info-box { fill: #f3e5f5; stroke: #7b1fa2; stroke-width: 2; }
+
+      .arrow { stroke: #34495e; stroke-width: 2; fill: none; }
+      .arrow-red { stroke: #e74c3c; stroke-width: 2.5; fill: none; }
+      .dashed { stroke-dasharray: 5,5; }
+    </style>
+  </defs>
+
+  <!-- 标题 -->
+  <text x="750" y="40" text-anchor="middle" class="title">Init Agent Context Strategy 全景架构</text>
+
+  <!-- ==================== 第一行：Context 构成 ==================== -->
+  <rect x="50" y="80" width="1400" height="160" class="core-box" rx="10"/>
+  <text x="750" y="110" text-anchor="middle" class="section-title">Context 构成（Claude API标准结构）</text>
+
+  <rect x="100" y="130" width="380" height="90" class="core-box" rx="5" fill="white"/>
+  <text x="290" y="155" text-anchor="middle" class="subtitle">System Prompt</text>
+  <text x="290" y="180" text-anchor="middle" class="small-text">角色、职责、约束、协议</text>
+  <text x="290" y="200" class="metric" text-anchor="middle">~2K tokens（固定）</text>
+
+  <rect x="500" y="130" width="380" height="90" class="core-box" rx="5" fill="white"/>
+  <text x="690" y="155" text-anchor="middle" class="subtitle">Tool Lists</text>
+  <text x="690" y="180" text-anchor="middle" class="small-text">Read, Write, 文件操作工具</text>
+  <text x="690" y="200" class="metric" text-anchor="middle">~1K tokens（固定）</text>
+
+  <rect x="900" y="130" width="520" height="90" class="core-box" rx="5" fill="white"/>
+  <text x="1160" y="155" text-anchor="middle" class="subtitle">Messages: List[Dict]</text>
+  <text x="1160" y="180" text-anchor="middle" class="small-text">{"role": "user"/"assistant", "content": "...", "tool_calls": [...], "tool_result": {...}}</text>
+  <text x="1160" y="200" class="metric" text-anchor="middle">动态增长（核心管理对象）</text>
+
+  <!-- ==================== 第二行：三大机制 ==================== -->
+
+  <!-- 左：System Prompt -->
+  <rect x="50" y="280" width="400" height="380" class="component-box" rx="10"/>
+  <text x="250" y="310" text-anchor="middle" class="section-title">System Prompt</text>
+
+  <rect x="80" y="330" width="340" height="310" class="component-box" rx="5" fill="white"/>
+
+  <!-- 角色与职责 -->
+  <text x="90" y="350" class="subtitle">角色与职责</text>
+  <text x="100" y="368" class="small-text">负责场景设计（Layer 1）</text>
+  <text x="100" y="383" class="small-text">基于用户需求生成设计 + 基于反馈修改</text>
+
+  <!-- 必须交付 -->
+  <text x="90" y="408" class="subtitle">必须交付</text>
+  <text x="100" y="426" class="small-text">场景目录 + yaml + BusinessRules</text>
+  <text x="100" y="441" class="small-text">+ format + InitToExecuteContext</text>
+
+  <!-- 必须遵守的约束 -->
+  <text x="90" y="466" class="subtitle">必须遵守的约束</text>
+  <text x="100" y="484" class="small-text">生成/修改后需HITL-1批准</text>
+  <text x="100" y="499" class="small-text">基于实际失败数据修改，不能臆测</text>
+
+  <!-- Context协议定义 -->
+  <text x="90" y="524" class="subtitle">Context协议定义</text>
+  <line x1="90" y1="533" x2="410" y2="533" stroke="#f57c00" stroke-width="1"/>
+
+  <text x="100" y="551" class="text">发送：InitToExecuteContext</text>
+  <text x="110" y="567" class="small-text">user_requirement + design_artifacts</text>
+
+  <text x="100" y="590" class="text">接收：ExecuteToInitContext</text>
+  <text x="110" y="606" class="small-text">execution_output_dir + failure_samples_index</text>
+  <text x="110" y="621" class="small-text">+ layer1_problems + suggestions</text>
+
+  <!-- 中：Messages 拼装策略 -->
+  <rect x="470" y="280" width="560" height="380" class="auxiliary-box" rx="10"/>
+  <text x="750" y="310" text-anchor="middle" class="section-title">Messages 拼装策略</text>
+
+  <!-- History 历史会话 -->
+  <rect x="500" y="330" width="240" height="150" class="auxiliary-box" rx="5" fill="white"/>
+  <text x="620" y="355" text-anchor="middle" class="subtitle">History（历史会话）</text>
+  <line x1="505" y1="365" x2="735" y2="365" stroke="#388e3c" stroke-width="1"/>
+  <text x="620" y="390" text-anchor="middle" class="text">保留每轮最后一条：</text>
+  <text x="620" y="410" text-anchor="middle" class="small-text">• user message</text>
+  <text x="620" y="428" text-anchor="middle" class="small-text">• assistant message</text>
+  <line x1="505" y1="445" x2="735" y2="445" stroke="#388e3c" stroke-width="1"/>
+  <text x="620" y="465" text-anchor="middle" class="metric">tool result 全部删除</text>
+
+  <!-- 当前会话 -->
+  <rect x="760" y="330" width="250" height="150" class="auxiliary-box" rx="5" fill="white"/>
+  <text x="885" y="355" text-anchor="middle" class="subtitle">当前会话</text>
+  <line x1="765" y1="365" x2="1005" y2="365" stroke="#388e3c" stroke-width="1"/>
+  <text x="885" y="390" text-anchor="middle" class="text">最近N个step：</text>
+  <text x="885" y="410" text-anchor="middle" class="small-text">完整保留tool result</text>
+  <line x1="765" y1="425" x2="1005" y2="425" stroke="#388e3c" stroke-width="1"/>
+  <text x="885" y="445" text-anchor="middle" class="text">N个step以前：</text>
+  <text x="885" y="465" text-anchor="middle" class="small-text">按History拼法处理</text>
+
+  <!-- 配置参数 -->
+  <rect x="500" y="500" width="240" height="90" class="info-box" rx="5" fill="white"/>
+  <text x="620" y="525" text-anchor="middle" class="subtitle">配置参数</text>
+  <line x1="505" y1="535" x2="735" y2="535" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="620" y="555" text-anchor="middle" class="text">KEEP_RECENT_STEPS = N</text>
+  <text x="620" y="575" text-anchor="middle" class="small-text">默认N=3，可配置调整</text>
+
+  <!-- 拼装示例 -->
+  <rect x="760" y="500" width="250" height="140" class="info-box" rx="5" fill="white"/>
+  <text x="885" y="525" text-anchor="middle" class="subtitle">拼装示例（N=3时）</text>
+  <line x1="765" y1="535" x2="1005" y2="535" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="885" y="555" text-anchor="middle" class="small-text">Compact前：ExecuteToInit + 10轮</text>
+  <text x="885" y="573" text-anchor="middle" class="small-text">Compact后：</text>
+  <text x="885" y="591" text-anchor="middle" class="small-text">[0] user: Mock总结请求</text>
+  <text x="885" y="609" text-anchor="middle" class="small-text">[1] asst: Summary</text>
+  <text x="885" y="627" text-anchor="middle" class="small-text">[2-7] 最近3步完整保留</text>
+
+  <!-- 右：Compact 压缩策略 -->
+  <rect x="1050" y="280" width="400" height="380" class="strategy-box" rx="10"/>
+  <text x="1250" y="310" text-anchor="middle" class="section-title">Compact 压缩策略</text>
+
+  <!-- 触发条件 -->
+  <rect x="1080" y="330" width="340" height="80" class="strategy-box" rx="5" fill="white"/>
+  <text x="1250" y="355" text-anchor="middle" class="subtitle">触发条件</text>
+  <line x1="1085" y1="365" x2="1415" y2="365" stroke="#c2185b" stroke-width="1"/>
+  <text x="1250" y="385" text-anchor="middle" class="text">total_tokens > 150K</text>
+  <text x="1250" y="400" class="metric" text-anchor="middle">自动触发压缩（Opus 200K）</text>
+
+  <!-- 压缩规则 -->
+  <rect x="1080" y="430" width="340" height="210" class="strategy-box" rx="5" fill="white"/>
+  <text x="1250" y="455" text-anchor="middle" class="subtitle">压缩执行规则</text>
+  <line x1="1085" y1="465" x2="1415" y2="465" stroke="#c2185b" stroke-width="1"/>
+
+  <text x="1250" y="495" text-anchor="middle" class="text">1. Mock user消息触发</text>
+  <text x="1250" y="515" text-anchor="middle" class="small-text">→ "请对当前工作进行总结"</text>
+
+  <text x="1250" y="542" text-anchor="middle" class="text">2. LLM生成Summary</text>
+  <text x="1250" y="562" text-anchor="middle" class="small-text">→ assistant回复，保留关键信息</text>
+
+  <text x="1250" y="589" text-anchor="middle" class="text">3. 保留最近N步</text>
+  <text x="1250" y="609" text-anchor="middle" class="small-text">→ 完整对话(N可配置，默认3)</text>
+
+</svg>

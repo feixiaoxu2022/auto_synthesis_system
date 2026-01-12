@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 800">
+  <defs>
+    <style>
+      .title { font: bold 28px sans-serif; fill: #1a1a1a; }
+      .section-title { font: bold 18px sans-serif; fill: #2c3e50; }
+      .subtitle { font: bold 15px sans-serif; fill: #34495e; }
+      .text { font: 13px sans-serif; fill: #2c3e50; }
+      .small-text { font: 11px sans-serif; fill: #555; }
+      .metric { font: bold 14px sans-serif; fill: #e74c3c; }
+      .code { font: 12px monospace; fill: #555; }
+
+      .core-box { fill: #e3f2fd; stroke: #1976d2; stroke-width: 3; }
+      .component-box { fill: #fff3e0; stroke: #f57c00; stroke-width: 2; }
+      .strategy-box { fill: #fce4ec; stroke: #c2185b; stroke-width: 2; }
+      .auxiliary-box { fill: #e8f5e9; stroke: #388e3c; stroke-width: 2; }
+      .info-box { fill: #f3e5f5; stroke: #7b1fa2; stroke-width: 2; }
+      .config-box { fill: #fff9c4; stroke: #f57f17; stroke-width: 2; }
+
+      .arrow { stroke: #34495e; stroke-width: 2; fill: none; }
+      .arrow-red { stroke: #e74c3c; stroke-width: 2.5; fill: none; }
+      .dashed { stroke-dasharray: 5,5; }
+    </style>
+  </defs>
+
+  <!-- 标题 -->
+  <text x="750" y="40" text-anchor="middle" class="title">Agent Context Management Strategy</text>
+  <text x="750" y="65" text-anchor="middle" class="small-text">适用于 Init Agent 和 Execute Agent</text>
+
+  <!-- ==================== 第一行：Context 构成 ==================== -->
+  <rect x="50" y="100" width="1400" height="160" class="core-box" rx="10"/>
+  <text x="750" y="130" text-anchor="middle" class="section-title">Context 构成（Claude API标准结构）</text>
+
+  <rect x="100" y="150" width="380" height="90" class="core-box" rx="5" fill="white"/>
+  <text x="290" y="175" text-anchor="middle" class="subtitle">System Prompt</text>
+  <text x="290" y="200" text-anchor="middle" class="small-text">角色、职责、约束、协议</text>
+  <text x="290" y="220" class="metric" text-anchor="middle">~2K tokens（固定）</text>
+
+  <rect x="500" y="150" width="380" height="90" class="core-box" rx="5" fill="white"/>
+  <text x="690" y="175" text-anchor="middle" class="subtitle">Tool Lists</text>
+  <text x="690" y="200" text-anchor="middle" class="small-text">Read, Write, 文件操作工具</text>
+  <text x="690" y="220" class="metric" text-anchor="middle">~1K tokens（固定）</text>
+
+  <rect x="900" y="150" width="520" height="90" class="core-box" rx="5" fill="white"/>
+  <text x="1160" y="175" text-anchor="middle" class="subtitle">Messages: List[Dict]</text>
+  <text x="1160" y="200" text-anchor="middle" class="small-text">{"role": "user"/"assistant", "content": "...", "tool_calls": [...], "tool_result": {...}}</text>
+  <text x="1160" y="220" class="metric" text-anchor="middle">动态增长（核心管理对象）</text>
+
+  <!-- ==================== 第二行：三大机制 ==================== -->
+
+  <!-- 左：System Prompt -->
+  <rect x="50" y="300" width="400" height="340" class="component-box" rx="10"/>
+  <text x="250" y="330" text-anchor="middle" class="section-title">System Prompt</text>
+
+  <rect x="80" y="350" width="340" height="270" class="component-box" rx="5" fill="white"/>
+
+  <!-- 角色与职责 -->
+  <text x="90" y="370" class="subtitle">角色与职责</text>
+  <text x="100" y="388" class="small-text">Init: 场景设计（Layer 1）</text>
+  <text x="100" y="403" class="small-text">Execute: 执行评测修复（Layer 2-4）</text>
+
+  <!-- 必须交付 -->
+  <text x="90" y="428" class="subtitle">必须交付</text>
+  <text x="100" y="446" class="small-text">Init: yaml + BusinessRules + ...</text>
+  <text x="100" y="461" class="small-text">Execute: tools + samples + ...</text>
+
+  <!-- 必须遵守的约束 -->
+  <text x="90" y="486" class="subtitle">必须遵守的约束</text>
+  <text x="100" y="504" class="small-text">Init: HITL-1批准 + 基于实际数据</text>
+  <text x="100" y="519" class="small-text">Execute: 迭代预算 + 归因分析</text>
+
+  <!-- Context协议定义 -->
+  <text x="90" y="544" class="subtitle">Context协议定义</text>
+  <line x1="90" y1="553" x2="410" y2="553" stroke="#f57c00" stroke-width="1"/>
+  <text x="100" y="571" class="small-text">定义接收/发送的Context格式</text>
+  <text x="100" y="586" class="small-text">详见各自的system_prompt.md</text>
+
+  <!-- 中：Messages 拼装策略 -->
+  <rect x="470" y="300" width="560" height="340" class="auxiliary-box" rx="10"/>
+  <text x="750" y="330" text-anchor="middle" class="section-title">Messages 拼装策略</text>
+
+  <!-- History 历史会话 -->
+  <rect x="500" y="350" width="240" height="120" class="auxiliary-box" rx="5" fill="white"/>
+  <text x="620" y="375" text-anchor="middle" class="subtitle">History（历史会话）</text>
+  <line x1="505" y1="385" x2="735" y2="385" stroke="#388e3c" stroke-width="1"/>
+  <text x="620" y="405" text-anchor="middle" class="text">保留：user + assistant</text>
+  <text x="620" y="425" text-anchor="middle" class="metric">删除：全部tool result</text>
+  <text x="620" y="445" text-anchor="middle" class="small-text">→ 降低token消耗</text>
+
+  <!-- 当前会话 -->
+  <rect x="760" y="350" width="250" height="120" class="auxiliary-box" rx="5" fill="white"/>
+  <text x="885" y="375" text-anchor="middle" class="subtitle">当前会话（最近N步）</text>
+  <line x1="765" y1="385" x2="1005" y2="385" stroke="#388e3c" stroke-width="1"/>
+  <text x="885" y="405" text-anchor="middle" class="text">完整保留：</text>
+  <text x="885" y="425" text-anchor="middle" class="small-text">user + assistant + tool result</text>
+  <text x="885" y="445" text-anchor="middle" class="small-text">N可配置（Init=3, Execute=5）</text>
+
+  <!-- 拼装示例 -->
+  <rect x="500" y="490" width="510" height="130" class="info-box" rx="5" fill="white"/>
+  <text x="755" y="515" text-anchor="middle" class="subtitle">Compact前后对比</text>
+  <line x1="505" y1="525" x2="1005" y2="525" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="755" y="545" text-anchor="middle" class="small-text">Compact前：初始Context + 大量对话历史</text>
+  <text x="755" y="565" text-anchor="middle" class="small-text">Compact后：Mock消息 + Summary + 最近N步</text>
+  <text x="755" y="585" text-anchor="middle" class="small-text">效果：150K→70K (Init) / 720K→200K (Execute)</text>
+  <text x="755" y="605" text-anchor="middle" class="metric">格式：user → assistant 交替，符合API协议</text>
+
+  <!-- 右：Compact 压缩策略 -->
+  <rect x="1050" y="300" width="400" height="340" class="strategy-box" rx="10"/>
+  <text x="1250" y="330" text-anchor="middle" class="section-title">Compact 压缩策略</text>
+
+  <!-- 触发条件 -->
+  <rect x="1080" y="350" width="340" height="70" class="strategy-box" rx="5" fill="white"/>
+  <text x="1250" y="375" text-anchor="middle" class="subtitle">触发条件</text>
+  <line x1="1085" y1="385" x2="1415" y2="385" stroke="#c2185b" stroke-width="1"/>
+  <text x="1250" y="405" text-anchor="middle" class="small-text">Init: 150K / Execute: 700K</text>
+
+  <!-- 压缩规则 -->
+  <rect x="1080" y="440" width="340" height="180" class="strategy-box" rx="5" fill="white"/>
+  <text x="1250" y="465" text-anchor="middle" class="subtitle">压缩执行流程</text>
+  <line x1="1085" y1="475" x2="1415" y2="475" stroke="#c2185b" stroke-width="1"/>
+
+  <text x="1250" y="500" text-anchor="middle" class="text">1. Mock user消息</text>
+  <text x="1250" y="517" text-anchor="middle" class="small-text">"请对当前工作进行总结"</text>
+
+  <text x="1250" y="542" text-anchor="middle" class="text">2. LLM生成Summary</text>
+  <text x="1250" y="559" text-anchor="middle" class="small-text">assistant回复（关键信息+路径）</text>
+
+  <text x="1250" y="584" text-anchor="middle" class="text">3. 保留最近N步完整对话</text>
+  <text x="1250" y="601" text-anchor="middle" class="small-text">N值运行时不变（不递减）</text>
+
+  <!-- ==================== 底部：配置对比 ==================== -->
+  <rect x="50" y="670" width="1400" height="110" class="config-box" rx="10"/>
+  <text x="750" y="700" text-anchor="middle" class="section-title">配置参数对比</text>
+
+  <!-- 表头 -->
+  <text x="200" y="730" text-anchor="middle" class="text" font-weight="bold">参数</text>
+  <text x="500" y="730" text-anchor="middle" class="text" font-weight="bold">Init Agent</text>
+  <text x="900" y="730" text-anchor="middle" class="text" font-weight="bold">Execute Agent</text>
+  <text x="1250" y="730" text-anchor="middle" class="text" font-weight="bold">说明</text>
+
+  <line x1="70" y1="740" x2="1430" y2="740" stroke="#f57f17" stroke-width="1"/>
+
+  <!-- 数据行 -->
+  <text x="200" y="760" text-anchor="middle" class="small-text">模型 / Context Window</text>
+  <text x="500" y="760" text-anchor="middle" class="small-text">Opus / 200K</text>
+  <text x="900" y="760" text-anchor="middle" class="small-text">Sonnet / 1M</text>
+  <text x="1250" y="760" text-anchor="middle" class="small-text">Init需要强推理，Execute注重执行</text>
+
+  <text x="200" y="775" text-anchor="middle" class="small-text">Compact触发阈值</text>
+  <text x="500" y="775" text-anchor="middle" class="small-text">150K (75%)</text>
+  <text x="900" y="775" text-anchor="middle" class="small-text">700K (70%)</text>
+  <text x="1250" y="775" text-anchor="middle" class="small-text">充分利用各自的context window</text>
+
+</svg>

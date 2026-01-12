@@ -37,28 +37,28 @@ Skills体系的最终目标是支持构建能够全方位评测LLM Agent在实�
 
 | Skill | 用途 | 核心内容 |
 |-------|------|---------|
-| [scenario_design_sop](skills/scenario_design_sop/) | 场景设计SOP | 五种设计方法、YAML结构、需求模板设计、能力覆盖映射 |
-| [business_rules_authoring](skills/business_rules_authoring/) | 业务规则编写 | 结构化模板、可验证性原则、规则设计模式 |
+| [scenario_design_sop](../.claude/skills/scenario_design_sop/) | 场景设计SOP | 五种设计方法、YAML结构、需求模板设计、能力覆盖映射 |
+| [business_rules_authoring](../.claude/skills/business_rules_authoring/) | 业务规则编写 | 结构化模板、可验证性原则、规则设计模式 |
 
 ### ⚙️ 实现阶段
 
 | Skill | 用途 | 核心内容 |
 |-------|------|---------|
-| [tool_implementation](skills/tool_implementation/) | MCP工具实现 | 设计原则、代码模板、参数规范、错误处理 |
-| [checker_implementation](skills/checker_implementation/) | Checker实现 | 验证策略、类型选择、rule-based优先原则 |
-| [sample_authoring](skills/sample_authoring/) | 样本合成 | 格式规范、质量标准、生成器模板、JSONL格式 |
+| [tool_implementation](../.claude/skills/tool_implementation/) | MCP工具实现 | 设计原则、代码模板、参数规范、错误处理 |
+| [checker_implementation](../.claude/skills/checker_implementation/) | Checker实现 | 验证策略、类型选择、rule-based优先原则 |
+| [sample_authoring](../.claude/skills/sample_authoring/) | 样本合成 | 格式规范、质量标准、生成器模板、JSONL格式 |
 
 ### 🧪 评测阶段
 
 | Skill | 用途 | 核心内容 |
 |-------|------|---------|
-| [evaluation_execution](skills/evaluation_execution/) | 评测执行 | benchkit使用、命令规范、调试技巧、3次失败规则 |
+| [evaluation_execution](../.claude/skills/evaluation_execution/) | 评测执行 | benchkit使用、命令规范、调试技巧、3次失败规则 |
 
 ### 📊 分析阶段
 
 | Skill | 用途 | 核心内容 |
 |-------|------|---------|
-| [failure_analysis](skills/failure_analysis/) | 失败归因分析 | 四类归因、8步流程、三层验证、能力维度映射 |
+| [failure_analysis](../.claude/skills/failure_analysis/) | 失败归因分析 | 四类归因、8步流程、三层验证、能力维度映射 |
 
 ## Skills工作流
 

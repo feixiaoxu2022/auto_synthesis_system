@@ -1,0 +1,210 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1600">
+  <!-- 定义样式 -->
+  <defs>
+    <style>
+      .layer-box { fill: #f0f4f8; stroke: #2d3748; stroke-width: 3; rx: 10; }
+      .init-phase { fill: #e6f7ff; stroke: #1890ff; stroke-width: 4; rx: 10; }
+      .execute-phase { fill: #f6ffed; stroke: #52c41a; stroke-width: 4; rx: 10; }
+      .orchestrator { fill: #fff7e6; stroke: #fa8c16; stroke-width: 4; rx: 10; }
+      .human-box { fill: #ffd700; stroke: #ff8c00; stroke-width: 3; rx: 10; }
+      .skills-box { fill: #f0e6ff; stroke: #722ed1; stroke-width: 4; rx: 10; }
+
+      .title-text { font-family: Arial, sans-serif; font-size: 32px; font-weight: bold; fill: #1a202c; }
+      .subtitle-text { font-family: Arial, sans-serif; font-size: 20px; fill: #4a5568; }
+      .section-title { font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #2d3748; }
+      .small-text { font-family: Arial, sans-serif; font-size: 14px; fill: #4a5568; }
+
+      .arrow { stroke: #2d3748; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+      .feedback-arrow { stroke: #eb2f96; stroke-width: 3; fill: none; marker-end: url(#feedback-arrowhead); stroke-dasharray: 8,4; }
+      .skills-arrow { stroke: #722ed1; stroke-width: 2; fill: none; marker-end: url(#skills-arrowhead); stroke-dasharray: 6,3; }
+    </style>
+
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#2d3748" />
+    </marker>
+    <marker id="feedback-arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#eb2f96" />
+    </marker>
+    <marker id="skills-arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#722ed1" />
+    </marker>
+
+    <!-- HITL图标 -->
+    <symbol id="hitl-icon" viewBox="0 0 24 24">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" stroke="#ff8c00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M6 21v-2a4 4 0 0 1 4 -4h2.5" stroke="#ff8c00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M19.001 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" stroke="#ff8c00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M19.001 15.5v1.5" stroke="#ff8c00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M19.001 21v1.5" stroke="#ff8c00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M22.032 17.25l-1.299 .75" stroke="#ff8c00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M17.27 20l-1.3 .75" stroke="#ff8c00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M15.97 17.25l1.3 .75" stroke="#ff8c00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20.733 20l1.3 .75" stroke="#ff8c00" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+
+  <!-- 标题 -->
+  <text x="700" y="40" class="title-text" text-anchor="middle">分层Agentic Loop架构</text>
+  <text x="700" y="70" class="subtitle-text" text-anchor="middle">自动样本合成系统 - 跨层迭代优化</text>
+
+  <!-- Orchestrator -->
+  <rect x="400" y="100" width="600" height="140" class="orchestrator" />
+  <text x="700" y="130" class="section-title" text-anchor="middle">🎯 Orchestrator Agent</text>
+  <text x="700" y="155" class="small-text" text-anchor="middle">全局决策中心 | 迭代预算控制 | 智能问题路由</text>
+  <text x="420" y="180" class="small-text">决策时机：Layer 4归因完成后</text>
+  <text x="420" y="200" class="small-text">路由规则：质量达标→输出 | Layer2/3问题→自动修复 | Layer1问题→HITL-4</text>
+  <text x="420" y="220" class="small-text">停止条件：质量≥85% | 收敛/震荡 | Critical问题&gt;30% | 硬限制100次</text>
+
+  <!-- 用户输入 -->
+  <rect x="500" y="260" width="400" height="60" class="layer-box" />
+  <text x="700" y="285" class="section-title" text-anchor="middle">👤 用户输入</text>
+  <text x="700" y="305" class="small-text" text-anchor="middle">业务场景描述</text>
+
+  <path d="M 700 320 L 700 350" class="arrow" />
+
+  <!-- Init Phase标签 -->
+  <rect x="250" y="350" width="120" height="40" class="init-phase" />
+  <text x="310" y="375" class="section-title" text-anchor="middle">Init Phase</text>
+
+  <!-- Layer 1 -->
+  <rect x="400" y="360" width="600" height="100" class="init-phase" />
+  <text x="700" y="390" class="section-title" text-anchor="middle">Layer 1: 场景理解与设计</text>
+  <text x="420" y="415" class="small-text">生成：unified_scenario_design.yaml | BusinessRules.md</text>
+  <text x="420" y="435" class="small-text">模型：Claude Sonnet 4.5 + Extended Thinking</text>
+
+  <!-- HITL-1 -->
+  <rect x="1030" y="370" width="280" height="80" class="human-box" />
+  <use href="#hitl-icon" x="1040" y="380" width="24" height="24"/>
+  <text x="1170" y="395" class="section-title" text-anchor="middle">HITL-1 (必须)</text>
+  <text x="1050" y="415" class="small-text">人工Review场景设计</text>
+  <text x="1050" y="432" class="small-text">100%触发 | 10-20分钟</text>
+
+  <path d="M 700 460 L 700 490" class="arrow" />
+
+  <!-- Execute Phase标签 -->
+  <rect x="250" y="490" width="120" height="40" class="execute-phase" />
+  <text x="310" y="515" class="section-title" text-anchor="middle">Execute Phase</text>
+
+  <!-- Layer 2 -->
+  <rect x="400" y="500" width="600" height="100" class="execute-phase" />
+  <text x="700" y="530" class="section-title" text-anchor="middle">Layer 2: 组件代码生成（并行）</text>
+  <text x="420" y="555" class="small-text">Tools | Checkers | Prototypes | 数据池 + 自动化单元测试</text>
+  <text x="420" y="575" class="small-text">模型：GPT-4o | 软限制10次 | 硬限制30次</text>
+
+  <!-- HITL-2标注 -->
+  <rect x="1030" y="510" width="280" height="80" class="human-box" />
+  <use href="#hitl-icon" x="1040" y="520" width="20" height="20"/>
+  <text x="1170" y="540" class="section-title" text-anchor="middle">HITL-2 (条件)</text>
+  <text x="1050" y="560" class="small-text">测试反复失败时介入</text>
+  <text x="1050" y="577" class="small-text">~5%触发 | 5-15分钟</text>
+
+  <path d="M 700 600 L 700 630" class="arrow" />
+
+  <!-- Layer 3 -->
+  <rect x="400" y="640" width="600" height="100" class="execute-phase" />
+  <text x="700" y="670" class="section-title" text-anchor="middle">Layer 3: 样本合成</text>
+  <text x="420" y="695" class="small-text">组合式生成：coverage matrix + data pool + prompts</text>
+  <text x="420" y="715" class="small-text">模型：GPT-4o | 软限制20次 | 硬限制50次</text>
+
+  <path d="M 700 740 L 700 770" class="arrow" />
+
+  <!-- Layer 4 -->
+  <rect x="400" y="780" width="600" height="100" class="execute-phase" />
+  <text x="700" y="810" class="section-title" text-anchor="middle">Layer 4: 自动评测与归因</text>
+  <text x="420" y="835" class="small-text">真实执行 + Checker验证 + LLM评判 + 智能归因</text>
+  <text x="420" y="855" class="small-text">模型：目标模型 + Claude Sonnet 4.5 | 质量目标≥85%</text>
+
+  <!-- HITL-3标注 -->
+  <rect x="1030" y="790" width="280" height="80" class="human-box" />
+  <use href="#hitl-icon" x="1040" y="800" width="20" height="20"/>
+  <text x="1170" y="820" class="section-title" text-anchor="middle">HITL-3 (条件)</text>
+  <text x="1050" y="840" class="small-text">新场景首次归因校验</text>
+  <text x="1050" y="857" class="small-text">~20%触发 | 3-5分钟</text>
+
+  <!-- Orchestrator决策判断点 -->
+  <path d="M 700 880 L 700 930" class="arrow" />
+  <text x="720" y="910" class="small-text">Orchestrator分析归因</text>
+
+  <!-- 反馈路径（简洁） -->
+  <g>
+    <!-- 到Layer 3 -->
+    <path d="M 680 930 L 200 930 L 200 690 L 400 690" class="feedback-arrow" />
+    <text x="180" y="810" class="small-text" fill="#eb2f96" transform="rotate(-90 180 810)">Layer 3问题</text>
+
+    <!-- 到Layer 2 -->
+    <path d="M 680 930 L 160 930 L 160 550 L 400 550" class="feedback-arrow" />
+    <text x="140" y="740" class="small-text" fill="#eb2f96" transform="rotate(-90 140 740)">Layer 2问题</text>
+
+    <!-- 到质量达标 -->
+    <path d="M 720 930 L 1100 930 L 1100 1050" class="arrow" />
+    <text x="1000" y="920" class="small-text">质量达标</text>
+
+    <!-- 到HITL-4 -->
+    <path d="M 700 930 L 700 1010" class="arrow" />
+    <text x="720" y="975" class="small-text">Layer 1问题</text>
+  </g>
+
+  <!-- HITL-4 -->
+  <rect x="450" y="1010" width="500" height="100" class="human-box" />
+  <use href="#hitl-icon" x="460" y="1020" width="24" height="24"/>
+  <text x="700" y="1045" class="section-title" text-anchor="middle">HITL-4: Layer 1级别问题</text>
+  <text x="470" y="1070" class="small-text">Critical问题&gt;30%或反复出现 | ~15%触发 | 15-30分钟</text>
+  <text x="470" y="1090" class="small-text">选项：修改Layer 1设计 OR 接受当前结果</text>
+
+  <!-- 从HITL-4回到Layer 1 -->
+  <path d="M 550 1010 L 550 960 L 1250 960 L 1250 410 L 1000 410" class="feedback-arrow" />
+  <text x="1270" y="680" class="small-text" fill="#eb2f96">修改Layer 1</text>
+
+  <!-- 从HITL-4接受结果 -->
+  <path d="M 850 1110 L 850 1150 L 1100 1150" class="arrow" />
+  <text x="870" y="1135" class="small-text">接受结果</text>
+
+  <!-- 最终输出 -->
+  <rect x="1100" y="1050" width="200" height="180" class="layer-box" />
+  <text x="1200" y="1080" class="section-title" text-anchor="middle">📊 最终输出</text>
+  <text x="1120" y="1110" class="small-text">评测报告</text>
+  <text x="1120" y="1135" class="small-text">归因分析</text>
+  <text x="1120" y="1160" class="small-text">优化建议</text>
+  <text x="1120" y="1185" class="small-text">质量指标</text>
+  <text x="1120" y="1210" class="small-text">迭代历史</text>
+
+  <!-- Skills知识库 -->
+  <rect x="50" y="500" width="120" height="300" class="skills-box" />
+  <text x="110" y="530" class="section-title" text-anchor="middle">📚 Skills</text>
+  <text x="65" y="555" class="small-text">参考样本</text>
+  <text x="65" y="575" class="small-text">业务规则</text>
+  <text x="65" y="595" class="small-text">格式规范</text>
+  <text x="65" y="615" class="small-text">代码模板</text>
+  <text x="65" y="635" class="small-text">设计模式</text>
+  <text x="65" y="655" class="small-text">经验教训</text>
+
+  <path d="M 170 560 L 400 410" class="skills-arrow" />
+  <path d="M 170 600 L 400 550" class="skills-arrow" />
+  <path d="M 170 640 L 400 690" class="skills-arrow" />
+  <path d="M 170 680 L 400 830" class="skills-arrow" />
+
+  <!-- 图例 -->
+  <g transform="translate(50, 1300)">
+    <text x="0" y="0" class="section-title">图例</text>
+    <rect x="0" y="15" width="80" height="30" class="init-phase" />
+    <text x="90" y="35" class="small-text">Init Phase</text>
+
+    <rect x="200" y="15" width="80" height="30" class="execute-phase" />
+    <text x="290" y="35" class="small-text">Execute Phase</text>
+
+    <rect x="400" y="15" width="80" height="30" class="human-box" />
+    <text x="490" y="35" class="small-text">HITL点</text>
+
+    <line x1="600" y1="30" x2="680" y2="30" class="feedback-arrow" />
+    <text x="690" y="35" class="small-text">反馈路径</text>
+
+    <line x1="800" y1="30" x2="880" y2="30" class="skills-arrow" />
+    <text x="890" y="35" class="small-text">知识推荐</text>
+
+    <text x="0" y="70" class="small-text" font-weight="bold">4个HITL点: HITL-1(100%) | HITL-2(~5%) | HITL-3(~20%) | HITL-4(~15%)</text>
+  </g>
+
+  <!-- 底部说明 -->
+  <text x="700" y="1550" class="small-text" text-anchor="middle" font-weight="bold">核心优势：4个精准HITL点 + 跨层自动修复 + Orchestrator智能路由 + Skills知识复用 + 动态收敛停止</text>
+</svg>

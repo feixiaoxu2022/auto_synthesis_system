@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1100">
+  <!-- 定义样式 -->
+  <defs>
+    <style>
+      .init-box { fill: #e6f7ff; stroke: #1890ff; stroke-width: 3; rx: 10; }
+      .execute-box { fill: #f6ffed; stroke: #52c41a; stroke-width: 3; rx: 10; }
+      .context-box { fill: #fff7e6; stroke: #fa8c16; stroke-width: 4; rx: 10; }
+      .file-box { fill: #fff; stroke: #52c41a; stroke-width: 2; rx: 5; }
+      .prompt-box { fill: #f0f0ff; stroke: #5b5bd6; stroke-width: 2; rx: 8; }
+
+      .title-text { font-family: Arial, sans-serif; font-size: 26px; font-weight: bold; fill: #1a202c; }
+      .section-title { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #2d3748; }
+      .label-text { font-family: Arial, sans-serif; font-size: 13px; fill: #4a5568; }
+      .small-text { font-family: Arial, sans-serif; font-size: 11px; fill: #718096; }
+      .highlight-text { font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; fill: #fa8c16; }
+
+      .arrow-right { stroke: #fa8c16; stroke-width: 4; fill: none; marker-end: url(#arrowhead-right); }
+      .arrow-left { stroke: #fa8c16; stroke-width: 4; fill: none; marker-end: url(#arrowhead-left); }
+    </style>
+
+    <marker id="arrowhead-right" markerWidth="12" markerHeight="12" refX="10" refY="3" orient="auto">
+      <polygon points="0 0, 12 3, 0 6" fill="#fa8c16" />
+    </marker>
+    <marker id="arrowhead-left" markerWidth="12" markerHeight="12" refX="2" refY="3" orient="auto">
+      <polygon points="12 0, 0 3, 12 6" fill="#fa8c16" />
+    </marker>
+
+    <!-- 文件图标 -->
+    <symbol id="file-icon" viewBox="0 0 24 24">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#52c41a" stroke-width="2" fill="none"/>
+      <polyline points="14 2 14 8 20 8" stroke="#52c41a" stroke-width="2" fill="none"/>
+    </symbol>
+  </defs>
+
+  <!-- 标题 -->
+  <text x="800" y="35" class="title-text" text-anchor="middle">双Agent架构：System Prompt + Context传递 + 数据落盘</text>
+
+  <!-- ========== 左侧：Init Agent ========== -->
+  <rect x="20" y="70" width="420" height="980" class="init-box" />
+  <text x="230" y="100" class="section-title" text-anchor="middle">Init Agent</text>
+
+  <!-- System Prompt 结构 -->
+  <rect x="40" y="120" width="380" height="200" class="prompt-box"/>
+  <text x="230" y="145" class="section-title" text-anchor="middle">System Prompt 结构</text>
+  <text x="60" y="170" class="label-text" font-weight="bold">角色与职责</text>
+  <text x="80" y="188" class="small-text">负责场景设计（Layer 1）</text>
+  <text x="60" y="210" class="label-text" font-weight="bold">必须交付</text>
+  <text x="80" y="228" class="small-text">yaml + BusinessRules + format</text>
+  <text x="80" y="244" class="small-text">+ InitToExecuteContext</text>
+  <text x="60" y="266" class="label-text" font-weight="bold">必须遵守的约束</text>
+  <text x="80" y="284" class="small-text">HITL-1批准 + 基于实际数据修改</text>
+  <text x="60" y="306" class="label-text" font-weight="bold">Context协议</text>
+
+  <!-- 输出设计文件 -->
+  <rect x="40" y="340" width="380" height="140" fill="#fff" stroke="#1890ff" stroke-width="2" rx="8"/>
+  <text x="230" y="365" class="section-title" text-anchor="middle">交付物：场景目录结构 + 设计文件</text>
+  <text x="60" y="390" class="label-text">scenarios/&lt;scenario_name&gt;/</text>
+  <text x="80" y="410" class="small-text">• unified_scenario_design.yaml</text>
+  <text x="80" y="428" class="small-text">• BusinessRules.md</text>
+  <text x="80" y="446" class="small-text">• format_specifications.json</text>
+  <text x="80" y="464" class="small-text">• tools/, checkers/, samples/ 等空目录</text>
+
+  <!-- 分隔线 -->
+  <line x1="40" y1="500" x2="420" y2="500" stroke="#1890ff" stroke-width="2" stroke-dasharray="8,4"/>
+
+  <!-- 构建 InitToExecuteContext -->
+  <rect x="40" y="520" width="380" height="160" fill="#fff" stroke="#1890ff" stroke-width="2" rx="8"/>
+  <text x="230" y="545" class="section-title" text-anchor="middle">构建 InitToExecuteContext</text>
+  <text x="60" y="575" class="label-text" font-weight="bold">传递内容：</text>
+  <text x="80" y="595" class="small-text">• user_requirement - 原始需求</text>
+  <text x="80" y="615" class="small-text">• design_artifacts - 设计文件路径</text>
+  <text x="80" y="635" class="small-text">  (yaml_path, business_rules_path,</text>
+  <text x="80" y="651" class="small-text">   format_specifications_path)</text>
+  <text x="230" y="672" class="label-text" text-anchor="middle">Context大小: 200-300 tokens</text>
+
+  <!-- 分隔线 -->
+  <line x1="40" y1="700" x2="420" y2="700" stroke="#1890ff" stroke-width="2" stroke-dasharray="8,4"/>
+
+  <!-- 接收 ExecuteToInitContext -->
+  <rect x="40" y="720" width="380" height="310" fill="#fff" stroke="#1890ff" stroke-width="2" rx="8"/>
+  <text x="230" y="745" class="section-title" text-anchor="middle">接收 ExecuteToInitContext</text>
+
+  <text x="60" y="775" class="label-text" font-weight="bold">Context中包含：</text>
+  <text x="80" y="795" class="small-text">• execution_output_dir - 数据目录路径</text>
+  <text x="80" y="813" class="small-text">• failure_samples_index - 失败样本索引</text>
+  <text x="80" y="831" class="small-text">  （含sample_id, paths, priority）</text>
+  <text x="80" y="849" class="small-text">• layer1_problems_report_path - 报告路径</text>
+  <text x="80" y="867" class="small-text">• modification_suggestions_summary</text>
+
+  <text x="60" y="895" class="label-text" font-weight="bold">约束：</text>
+  <text x="80" y="915" class="small-text">• 所有详细数据已落盘，可访问</text>
+  <text x="80" y="933" class="small-text">• 必须基于实际失败数据修改设计</text>
+  <text x="80" y="951" class="small-text">• 不能臆测问题原因</text>
+
+  <text x="230" y="985" class="label-text" text-anchor="middle">Context大小: 2K-5K tokens</text>
+  <text x="230" y="1010" class="label-text" text-anchor="middle">数据完整落盘，永久可追溯</text>
+
+  <!-- ========== 中间：Context 传递 ========== -->
+
+  <!-- Handoff 1: Init → Execute -->
+  <path d="M 440 420 L 1160 420" class="arrow-right" />
+  <text x="520" y="405" class="highlight-text" text-anchor="middle">Handoff 1</text>
+  <text x="520" y="435" class="label-text" text-anchor="middle">Init → Execute</text>
+
+  <rect x="640" y="340" width="320" height="180" class="context-box" />
+  <text x="800" y="365" class="section-title" text-anchor="middle">InitToExecuteContext</text>
+  <text x="800" y="385" class="highlight-text" text-anchor="middle">200-300 tokens</text>
+  <text x="660" y="410" class="label-text">{</text>
+  <text x="680" y="430" class="small-text">user_requirement: "...",</text>
+  <text x="680" y="448" class="small-text">design_artifacts: {</text>
+  <text x="700" y="466" class="small-text">unified_scenario_design_path,</text>
+  <text x="700" y="482" class="small-text">business_rules_path, ...</text>
+  <text x="680" y="498" class="small-text">}</text>
+  <text x="660" y="514" class="label-text">}</text>
+
+  <!-- Handoff 2: Execute → Init -->
+  <path d="M 1160 750 L 440 750" class="arrow-right" />
+  <text x="1080" y="735" class="highlight-text" text-anchor="middle">Handoff 2</text>
+  <text x="1080" y="765" class="label-text" text-anchor="middle">Execute → Init</text>
+
+  <rect x="640" y="640" width="320" height="240" class="context-box" />
+  <text x="800" y="665" class="section-title" text-anchor="middle">ExecuteToInitContext</text>
+  <text x="800" y="685" class="highlight-text" text-anchor="middle">2K-5K tokens</text>
+  <text x="660" y="710" class="label-text">{</text>
+  <text x="680" y="730" class="small-text">execution_output_dir: "...",</text>
+  <text x="680" y="748" class="small-text">failure_samples_index: [</text>
+  <text x="690" y="766" class="small-text">{ sample_id, paths,</text>
+  <text x="690" y="782" class="small-text">  priority }, ...</text>
+  <text x="680" y="798" class="small-text">],</text>
+  <text x="680" y="816" class="small-text">layer1_problems_report_path,</text>
+  <text x="680" y="834" class="small-text">modification_suggestions: [...]</text>
+  <text x="660" y="854" class="label-text">}</text>
+  <text x="800" y="872" class="small-text" text-anchor="middle">只传路径和索引，不传完整内容</text>
+
+  <!-- ========== 右侧：Execute Agent ========== -->
+  <rect x="1160" y="70" width="420" height="980" class="execute-box" />
+  <text x="1370" y="100" class="section-title" text-anchor="middle">Execute Agent</text>
+
+  <!-- System Prompt 结构 -->
+  <rect x="1180" y="120" width="380" height="240" class="prompt-box"/>
+  <text x="1370" y="145" class="section-title" text-anchor="middle">System Prompt 结构</text>
+  <text x="1200" y="170" class="label-text" font-weight="bold">角色与职责</text>
+  <text x="1220" y="188" class="small-text">执行Layer 2-3-4 + 自动修复</text>
+  <text x="1200" y="210" class="label-text" font-weight="bold">必须交付</text>
+  <text x="1220" y="228" class="small-text">完整数据落盘 + ExecuteToInitContext</text>
+  <text x="1200" y="250" class="label-text" font-weight="bold">必须遵守的约束</text>
+  <text x="1220" y="268" class="small-text">对话历史完整保存 + Context传路径</text>
+  <text x="1220" y="284" class="small-text">迭代预算 + 归因区分4类问题</text>
+  <text x="1200" y="306" class="label-text" font-weight="bold">核心决策规则</text>
+  <text x="1220" y="324" class="small-text">何时停止 / 何时返回Init / 何时继续</text>
+  <text x="1220" y="340" class="small-text">成功率≥85% | 收敛 | Critical>30% | ...</text>
+
+  <!-- 接收 InitToExecuteContext -->
+  <rect x="1180" y="380" width="380" height="150" fill="#fff" stroke="#52c41a" stroke-width="2" rx="8"/>
+  <text x="1370" y="405" class="section-title" text-anchor="middle">接收 InitToExecuteContext</text>
+  <text x="1200" y="435" class="label-text" font-weight="bold">Context中包含：</text>
+  <text x="1220" y="455" class="small-text">• user_requirement - 原始需求</text>
+  <text x="1220" y="473" class="small-text">• design_artifacts - 设计文件路径</text>
+  <text x="1220" y="491" class="small-text">  读取配置后开始执行Layer 2-3-4</text>
+  <text x="1370" y="520" class="label-text" text-anchor="middle">Context大小: 200-300 tokens</text>
+
+  <!-- 分隔线 -->
+  <line x1="1180" y1="550" x2="1560" y2="550" stroke="#52c41a" stroke-width="2" stroke-dasharray="8,4"/>
+
+  <!-- 落盘数据 -->
+  <rect x="1180" y="570" width="380" height="360" fill="#fff" stroke="#52c41a" stroke-width="2" rx="8"/>
+  <text x="1370" y="595" class="section-title" text-anchor="middle">交付物：填充目录 + 数据落盘</text>
+  <text x="1200" y="620" class="label-text" font-weight="bold">往已有目录填充：</text>
+
+  <rect x="1200" y="635" width="340" height="60" class="file-box" />
+  <use href="#file-icon" x="1210" y="645" width="14" height="14"/>
+  <text x="1230" y="657" class="small-text">tools/*.py, checkers/*.py</text>
+  <text x="1230" y="673" class="small-text">data_pools/*.json, samples/*.json</text>
+  <text x="1230" y="689" class="small-text">Layer 2-3组件代码和样本</text>
+
+  <rect x="1200" y="705" width="340" height="60" class="file-box" />
+  <use href="#file-icon" x="1210" y="715" width="14" height="14"/>
+  <text x="1230" y="727" class="small-text">execution_outputs/iteration_N/</text>
+  <text x="1230" y="743" class="small-text">samples/ - 所有样本副本</text>
+  <text x="1230" y="759" class="small-text">execution_traces/ - 对话历史</text>
+
+  <rect x="1200" y="775" width="340" height="60" class="file-box" />
+  <use href="#file-icon" x="1210" y="785" width="14" height="14"/>
+  <text x="1230" y="797" class="small-text">evaluation_results/ - checker结果</text>
+  <text x="1230" y="813" class="small-text">attribution_analysis/ - 归因</text>
+
+  <rect x="1200" y="845" width="340" height="75" class="file-box" />
+  <use href="#file-icon" x="1210" y="855" width="14" height="14"/>
+  <text x="1230" y="867" class="small-text">failure_summary.json</text>
+  <text x="1230" y="883" class="small-text">layer1_problems_report.json</text>
+  <text x="1230" y="899" class="small-text">(如需返回Init时)</text>
+
+  <!-- 分隔线 -->
+  <line x1="1180" y1="950" x2="1560" y2="950" stroke="#52c41a" stroke-width="2" stroke-dasharray="8,4"/>
+
+  <!-- 构建ExecuteToInitContext -->
+  <rect x="1180" y="970" width="380" height="60" fill="#fff" stroke="#52c41a" stroke-width="2" rx="8"/>
+  <text x="1370" y="995" class="section-title" text-anchor="middle">构建 ExecuteToInitContext</text>
+  <text x="1220" y="1020" class="small-text">• 只传路径和索引，不传完整内容</text>
+
+  <!-- 底部总结 -->
+  <rect x="20" y="1065" width="1560" height="25" fill="#fffbe6" stroke="#faad14" stroke-width="3" rx="8"/>
+  <text x="800" y="1083" class="section-title" text-anchor="middle">System Prompt定义协议  |  Context传递轻量路径  |  数据完整落盘  |  Agent访问落盘数据</text>
+</svg>

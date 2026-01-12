@@ -1,0 +1,27 @@
+# Logs
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Outputs
+outputs/
+checkpoints/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Sensitive configuration - DO NOT COMMIT
+benchkit/model_config.json
+*_api_key.txt
+
+# Misc
+.DS_Store
