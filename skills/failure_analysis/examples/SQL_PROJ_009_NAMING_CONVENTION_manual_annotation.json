@@ -2,7 +2,7 @@
   "scenario_id": "proj_009",
   "scenario_type": "sql_process",
   "model": "GLM_RL_1227decay_1229v1_step90",
-  "evaluation_file": "/Users/feixiaoxu01/Documents/agents/agent_auto_evaluation/universal_scenario_framework/analysis/taubench相关训练效果的分析/after_rl_training/GLM_RL_1227decay_1229v1_step90_agent_MCP-v1-单轮1128_4/input_files/sqllite_checked_uni_crawl_GLM_RL_1227decay_1229v1_step90_377ef144d19e4c2599ddc61e00929437_results.jsonl",
+  "evaluation_file": "evaluation_outputs/sqllite_checked_uni_crawl_GLM_RL_1227decay_1229v1_step90_377ef144d19e4c2599ddc61e00929437_results.jsonl",
   "failure_summary": "Query要求计算并存储'超支率'，但未约定该字段的英文命名。样本设计者tool_call_list使用overrun_rate，Checklist验证时也假设字段名必须是overrun_rate。这存在潜在风险：如果Agent使用overrun_ratio、excess_rate等语义正确但命名不同的字段名，Checklist验证会失败。这是典型的字段命名约定缺失问题。",
   "analysis": {
     "basic_metrics": {

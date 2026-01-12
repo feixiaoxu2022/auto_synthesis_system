@@ -2,7 +2,7 @@
   "scenario_id": "proj_004",
   "scenario_type": "sql_process",
   "model": "GLM_RL_1227decay_1229v1_step90",
-  "evaluation_file": "/Users/feixiaoxu01/Documents/agents/agent_auto_evaluation/universal_scenario_framework/analysis/taubench相关训练效果的分析/after_rl_training/GLM_RL_1227decay_1229v1_step90_agent_MCP-v1-单轮1128_4/input_files/sqllite_checked_uni_crawl_GLM_RL_1227decay_1229v1_step90_377ef144d19e4c2599ddc61e00929437_results.jsonl",
+  "evaluation_file": "evaluation_outputs/sqllite_checked_uni_crawl_GLM_RL_1227decay_1229v1_step90_377ef144d19e4c2599ddc61e00929437_results.jsonl",
   "failure_summary": "样本设计者期望Agent创建包含overrun_hours字段的表，但Query只明确要求记录4个字段（任务ID、名称、预估工时、实际工时），未要求存储超支工时计算字段。Checklist验证时查询overrun_hours字段失败，报错'no such column: overrun_hours'。这是典型的Query描述不完整问题。",
   "analysis": {
     "basic_metrics": {
