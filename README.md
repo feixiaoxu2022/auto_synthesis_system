@@ -97,13 +97,24 @@ Skills体系的最终目标是支持构建能够全方位评测LLM Agent在实�
 
 ## 快速开始
 
-### 方式1：Agent通过use_skill工具调用
+### 方式1：集成到Agent系统
 
+Skills设计为Agent友好的知识模块，可通过工具调用方式访问：
+
+**实现要点**：
+- 每个skill的SKILL.md包含frontmatter元数据（name、description）
+- Agent可通过文件读取或工具调用获取skill内容
+- 建议在Agent system prompt中提供skills索引
+
+**集成示例**：
 ```python
-# Agent调用示例
-use_skill(skill_type="scenario_design_sop")
-use_skill(skill_type="sample_authoring")
-use_skill(skill_type="failure_analysis")
+# 示例：实现skill访问工具
+def get_skill(skill_name: str) -> str:
+    skill_path = f"skills/{skill_name}/SKILL.md"
+    return read_file(skill_path)
+
+# Agent使用
+scenario_design_guide = get_skill("scenario_design_sop")
 ```
 
 ### 方式2：直接阅读skill文档
@@ -117,8 +128,16 @@ use_skill(skill_type="failure_analysis")
 ### 方式3：移植到其他项目
 
 1. 复制整个skills目录到目标项目
-2. 在Agent system prompt中注入目录约定
-3. Agent通过`use_skill`工具访问（需要实现UseSkill工具）
+2. 在Agent system prompt中提供skills索引和路径约定
+3. 实现文件读取或工具调用接口让Agent访问skills
+
+**目录约定注入示例**：
+```
+你可以通过读取以下skills获取领域知识：
+- scenario_design_sop: skills/scenario_design_sop/SKILL.md
+- sample_authoring: skills/sample_authoring/SKILL.md
+...
+```
 
 ## Skills设计原则
 
