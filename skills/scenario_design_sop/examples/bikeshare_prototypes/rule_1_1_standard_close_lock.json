@@ -1,0 +1,48 @@
+{
+  "rule_id": "1.1",
+  "description": "测试规则1.1：标准关锁场景。Agent应该：1) 检查单车位置是否在禁停区；2) 若不在禁停区，正常关锁并计费。注：此原型包含规则1.4的VIP用户关锁补偿逻辑，当用户为钻石/白金会员时，系统会自动发放相应优惠券。",
+  "environment_conditions": {
+    "user": {
+      "data.bk_close_lock_count_30day": {
+        "operator": "<=",
+        "value": 4
+      },
+      "user_loyalty_level": {
+        "operator": "in",
+        "value": [
+          "bronze",
+          "silver",
+          "gold"
+        ]
+      }
+    },
+    "order": {
+      "骑行状态": "进行中",
+      "is_in_no_parking_zone": false
+    },
+    "bike": {
+      "is_faulty": false,
+      "is_in_no_parking_zone": false
+    }
+  },
+  "query_templates": [
+    "你好，我这边好像忘记锁车了，能帮我远程操作关一下吗？{order_id}",
+    "师傅你好，我这边忘记关锁了，能帮我处理一下吗？谢谢。{order_id}",
+    "麻烦帮我结束这个订单，忘记关锁了{order_id}",
+    "您好，我需要结束骑行，能远程帮我关下车吗？{order_id}",
+    "不好意思，忘记锁车了，现在还在计费，请帮忙处理{order_id}",
+    "客服，我这边骑行忘记结束了，麻烦帮忙关一下{order_id}",
+    "帮我远程关锁，谢谢。{order_id}",
+    "麻烦远程帮我结束行程。{order_id}",
+    "请帮我远程结束骑行。{order_id}",
+    "能帮我远程关一下锁吗？{order_id}",
+    "你好，我已经下车了，但是忘记锁车，现在还在计费中，能帮我远程关锁吗？{order_id}",
+    "客服你好，我这边骑行已经结束了，但是需要远程关锁，麻烦协助处理一下。{order_id}",
+    "不好意思打扰，我这边骑完车了，但是需要远程关锁服务，谢谢帮忙。{order_id}",
+    "您好，我人已经离开了，但是app显示还在计费，能帮我远程把锁关上吗？{order_id}",
+    "麻烦客服帮个忙，我这边骑行完了想远程关锁，可以协助处理吗？{order_id}"
+  ],
+  "expected_outcome": {
+    "type": "standard_close_lock"
+  }
+}

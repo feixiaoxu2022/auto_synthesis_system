@@ -1,0 +1,162 @@
+{
+  "version": "1.0.0",
+  "description": "Skills library for Init Agent and Execute Agent",
+  "skills": {
+    "business_rules_authoring": {
+      "title": "业务规则编写指南",
+      "description": "teach Claude how to write comprehensive business rules documents",
+      "category": "init_agent",
+      "layer": "Layer 1 - Scenario Design",
+      "path": "business_rules_authoring/SKILL.md",
+      "dependencies": [],
+      "components": {
+        "skill_md": "SKILL.md - 核心指南文档",
+        "templates": "templates/ - BusinessRules标准模板",
+        "examples": "examples/ - 优秀BusinessRules示例（bikeshare, crm, education_admin）",
+        "sop": "sop/ - 编写流程和质量检查清单"
+      }
+    },
+    "scenario_design_sop": {
+      "title": "场景设计SOP",
+      "description": "teach Claude the complete scenario design workflow",
+      "category": "init_agent",
+      "layer": "Layer 1 - Scenario Design",
+      "path": "scenario_design_sop/SKILL.md",
+      "dependencies": ["business_rules_authoring"],
+      "components": {
+        "skill_md": "SKILL.md - 完整场景设计流程",
+        "templates": "templates/ - 场景设计checklist和配置模板",
+        "examples": "examples/ - 完整场景设计案例（以bikeshare为标杆）",
+        "sop": "sop/ - 难度提升策略、决策点和权衡考虑"
+      }
+    },
+    "init_to_execute_context": {
+      "title": "Init到Execute Context交接",
+      "description": "teach Claude the context handoff format from Init to Execute Agent",
+      "category": "init_agent",
+      "layer": "Layer 1 - Scenario Design",
+      "path": "init_to_execute_context/SKILL.md",
+      "dependencies": [],
+      "components": {
+        "skill_md": "SKILL.md - Context交接格式说明",
+        "templates": "templates/ - InitToExecuteContext JSON标准模板",
+        "examples": "examples/ - 完整交接示例",
+        "sop": "sop/ - 字段填写规范和验证清单"
+      }
+    },
+    "tool_implementation": {
+      "title": "工具实现指南",
+      "description": "teach Claude how to implement scenario-specific tools",
+      "category": "execute_agent",
+      "layer": "Layer 2 - Tools Implementation",
+      "path": "tool_implementation/SKILL.md",
+      "dependencies": [],
+      "components": {
+        "skill_md": "SKILL.md - 工具实现核心指南",
+        "templates": "templates/ - BaseAtomicTool代码模板和参数schema模板",
+        "examples": "examples/ - 各类工具实现示例（从scenarios/*/src/tools/提取）",
+        "sop": "sop/ - 设计原则、错误处理标准、单元测试要求"
+      }
+    },
+    "checker_implementation": {
+      "title": "检查器实现指南",
+      "description": "teach Claude how to implement validation checkers",
+      "category": "execute_agent",
+      "layer": "Layer 3 - Checkers Implementation",
+      "path": "checker_implementation/SKILL.md",
+      "dependencies": [],
+      "components": {
+        "skill_md": "SKILL.md - 检查器实现核心指南",
+        "templates": "templates/ - BaseChecker代码模板和SEMANTIC_CHECKER_GUIDE",
+        "examples": "examples/ - 各类检查器示例（从scenarios/*/src/evaluation/checkers/提取）",
+        "sop": "sop/ - 检查器类型选择、评分逻辑规范、失败原因记录标准"
+      }
+    },
+    "sample_authoring": {
+      "title": "样本编写指南",
+      "description": "teach Claude how to write high-quality test samples",
+      "category": "execute_agent",
+      "layer": "Layer 4 - Samples Generation",
+      "path": "sample_authoring/SKILL.md",
+      "dependencies": [],
+      "components": {
+        "skill_md": "SKILL.md - 样本编写完整指南（SAMPLE_GENERATION_SOP全文）",
+        "templates": "templates/ - 样本generator模板、prototype模板、multiturn_user_simulator_guide",
+        "examples": "examples/ - 优秀样本示例（按简单/中等/复杂分类）",
+        "sop": "sop/ - 质量保证标准、user_simulator_prompt设计规范"
+      }
+    },
+    "execute_to_init_context": {
+      "title": "Execute到Init Context反馈",
+      "description": "teach Claude the context feedback format from Execute to Init Agent",
+      "category": "execute_agent",
+      "layer": "Layer 2-4 - Execution & Evaluation",
+      "path": "execute_to_init_context/SKILL.md",
+      "dependencies": [],
+      "components": {
+        "skill_md": "SKILL.md - Context反馈格式说明",
+        "templates": "templates/ - ExecuteToInitContext和layer1_problems_report JSON模板",
+        "examples": "examples/ - 完整反馈示例和失败样本索引示例",
+        "sop": "sop/ - 失败原因分类规范、改进建议格式、优先级判断标准"
+      }
+    },
+    "failure_analysis": {
+      "title": "失败案例归因分析指南",
+      "description": "teach Claude how to perform deep root cause analysis on failed test cases",
+      "category": "execute_agent",
+      "layer": "Layer 5 - Analysis & Iteration",
+      "path": "failure_analysis/SKILL.md",
+      "dependencies": ["execute_to_init_context"],
+      "components": {
+        "skill_md": "SKILL.md - 完整归因分析方法论（包含两层分析框架、8步分析流程）",
+        "templates": "templates/ - 分析报告模板、归因决策树模板",
+        "examples": "examples/ - 带manual_annotation的优秀分析案例",
+        "sop": "sop/ - 分析工作流程、自我检查清单、常见错误避免"
+      }
+    },
+    "evaluation_execution": {
+      "title": "评测执行框架指南",
+      "description": "teach Claude how to run automated evaluations using BenchKit framework",
+      "category": "execute_agent",
+      "layer": "Layer 4 - Execution & Evaluation",
+      "path": "evaluation_execution/SKILL.md",
+      "dependencies": ["sample_authoring", "checker_implementation"],
+      "components": {
+        "skill_md": "SKILL.md - 评测执行完整指南",
+        "references": "references/ - executor和evaluator核心代码片段"
+      }
+    }
+  },
+  "usage_guide": {
+    "for_init_agent": {
+      "primary_skills": [
+        "business_rules_authoring",
+        "scenario_design_sop",
+        "init_to_execute_context"
+      ],
+      "workflow": [
+        "1. 使用 scenario_design_sop 了解整体场景设计流程",
+        "2. 使用 business_rules_authoring 编写BusinessRules.md",
+        "3. 使用 init_to_execute_context 生成标准交接Context"
+      ]
+    },
+    "for_execute_agent": {
+      "primary_skills": [
+        "tool_implementation",
+        "checker_implementation",
+        "sample_authoring",
+        "evaluation_execution",
+        "execute_to_init_context",
+        "failure_analysis"
+      ],
+      "workflow": [
+        "1. 使用 tool_implementation 创建场景专用工具",
+        "2. 使用 checker_implementation 实现验证检查器",
+        "3. 使用 sample_authoring 编写高质量测试样本",
+        "4. 使用 evaluation_execution 执行自动化评测",
+        "5. 使用 failure_analysis 深度分析失败案例",
+        "6. 使用 execute_to_init_context 生成标准反馈Context"
+      ]
+    }
+  }
+}

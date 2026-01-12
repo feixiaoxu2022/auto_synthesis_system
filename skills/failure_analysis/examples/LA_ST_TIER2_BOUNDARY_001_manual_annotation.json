@@ -1,0 +1,30 @@
+{
+  "scenario_id": "LA_ST_TIER2_BOUNDARY_001",
+  "model": "glm-4.5",
+  "evaluation_file": "scenarios/office_administration/evaluation_outputs/glm-4_5/evaluation_results/LA_ST_TIER2_BOUNDARY_001_evaluation_20251018_202301.json",
+  "failure_summary": "7天请假应为二级审批(manager+director)，Agent误设为三级审批(含HR)；Checker按tier2过滤未命中并判失败。",
+  "analysis": {
+    "basic_metrics": {"total_turns": 1, "task_completion_rate": 0.0, "checker_pass_rate": 0.333},
+    "conversation_key_turns": [
+      {"turn": 2, "tool": "create_leave_application", "args_excerpt": "approval_tier: tier3_manager_director_hr, approvers:[manager,director,hr]", "result_excerpt": "leave_001"}
+    ],
+    "expectation_vs_actual": {
+      "expected": "3<天数≤7 → tier2(manager+director)",
+      "actual": "创建为tier3(含HR)",
+      "check_evidence": "create_operation_verified(按tier2过滤)找不到；latest_created.approvers=['manager','director','hr']不符期望"
+    }
+  },
+  "final_state_validation": {
+    "tool_boundary": "审批层级由Agent参数决定，工具不做规则计算",
+    "agent_calls": "误判边界将7天归入tier3",
+    "business_rules": "BusinessRules：3<天数≤7为tier2；>7为tier3",
+    "conclusion": "Agent能力问题（业务规则遵循/边界判断）"
+  },
+  "root_causes": [
+    {"type": "Agent能力问题", "dimension": ["业务规则遵循"], "evidence": ["args中tier3"], "reasoning": "未正确应用边界条件"}
+  ],
+  "improvements": [
+    {"area": "边界规则编码", "action": "将审批层级映射写成确定性分支：≤3 / 3<≤7 / >7", "owner": "模型侧", "priority": "P1"}
+  ]
+}
+

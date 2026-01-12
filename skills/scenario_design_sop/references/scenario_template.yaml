@@ -1,0 +1,361 @@
+# ============================================
+# 场景配置模板
+# 复制此文件后根据实际场景修改
+# ============================================
+
+# --- 基础信息 ---
+scenario_name: "智能广告投放 - 现实化ROI目标驱动的拉新广告系列创建"
+sub_scenario_type: "realistic_roi_targeted_campaign_creation"  # 唯一标识，用于文件命名
+description: "用户基于真实业务情况提出拉新需求，Agent需要基于客户经验水平、行业特点、预算约束制定现实可行的投放策略"
+domain: "ad_campaign"  # 业务领域标识
+
+# --- 运行时配置 ---
+# 所有时间敏感场景必须配置，确保数据一致性
+runtime_config:
+  system_time: "2025-07-16T10:00:00Z"  # ISO格式，场景基准时间
+  timezone: "Asia/Shanghai"
+  current_date_description: "今天是2025年7月16日，当前时间是10:00，工作日上午"
+
+# --- MCP服务配置 ---
+mcp_service_config:
+  service_name: "ad_campaign_service"
+  service_description: "广告投放创建服务"
+  service_endpoint: "http://127.0.0.1:8405/mcp/"
+
+# --- 实体定义 ---
+# 定义数据池的结构，每个实体对应一张"表"
+entities:
+
+  # 实体示例：广告主
+  advertisers:
+    display_name: "广告主"
+    description: "投放广告的客户主体"
+    id_field: "advertiser_id"       # 主键字段名
+    sample_count: 15                # 数据池中生成的样本数量
+
+    attributes:
+      # 字符串类型
+      name:
+        type: "string"
+        description: "广告主公司名称"
+
+      # 枚举类型 - 有限可选值
+      industry:
+        type: "enum"
+        values: ["B2C_ecommerce", "B2B_saas", "education", "finance"]
+        description: "所属行业"
+        distribution:  # 可选：控制各值的生成比例
+          B2C_ecommerce: 0.4
+          B2B_saas: 0.3
+          education: 0.2
+          finance: 0.1
+
+      # 枚举类型 - 用于难度分层
+      cash_flow_situation:
+        type: "enum"
+        values: ["tight", "stable", "abundant"]
+        description: "现金流状况：紧张/稳定/充裕"
+
+      channel_experience_level:
+        type: "enum"
+        values: ["beginner", "intermediate", "expert"]
+        description: "投放经验水平"
+
+      # 数值类型 - 浮点数
+      monthly_ad_budget_capacity:
+        type: "float"
+        range: [8000, 50000]        # 取值范围
+        description: "月度广告预算承受能力"
+        tier_based:                 # 可选：基于其他字段的分层范围
+          startup: [8000, 20000]
+          growth: [15000, 35000]
+          enterprise: [25000, 50000]
+
+      # 数值类型 - 整数
+      historical_campaign_count:
+        type: "number"
+        range: [0, 50]
+        description: "历史投放活动数量"
+
+      # 布尔类型
+      is_vip:
+        type: "boolean"
+        description: "是否VIP客户"
+
+      # 对象类型 - 嵌套结构
+      primary_target_audience:
+        type: "object"
+        description: "主要目标客户群体特征"
+        properties:
+          user_type:
+            type: "enum"
+            values: ["consumers", "business_users", "professionals"]
+          age_category:
+            type: "enum"
+            values: ["young_adults_18_35", "middle_aged_35_50", "seniors_50_plus"]
+
+      # 数组类型
+      preferred_channels:
+        type: "array"
+        items:
+          type: "string"
+        description: "偏好的投放渠道列表"
+
+      # 日期时间类型
+      registration_time:
+        type: "datetime"
+        description: "客户注册时间"
+
+    # 实体间关系
+    relationships:
+      - has_many: "campaigns"       # 一对多：一个广告主有多个活动
+
+  # 关联实体示例：广告活动
+  campaigns:
+    display_name: "广告活动"
+    description: "具体的广告投放活动"
+    id_field: "campaign_id"
+    sample_count: 0                 # 初始为0，由Agent创建
+
+    attributes:
+      advertiser_id:
+        type: "string"
+        description: "所属广告主ID"
+        foreign_key: "advertisers.advertiser_id"  # 外键关联
+
+      campaign_name:
+        type: "string"
+        description: "活动名称"
+
+      campaign_type:
+        type: "enum"
+        values: ["user_acquisition", "retention", "brand_awareness"]
+        description: "活动类型"
+
+      target_roi:
+        type: "float"
+        range: [1.5, 4.0]
+        description: "目标ROI"
+
+      total_budget:
+        type: "float"
+        description: "总预算"
+
+      status:
+        type: "enum"
+        values: ["draft", "pending", "active", "paused", "completed"]
+        description: "活动状态"
+
+    relationships:
+      - belongs_to: "advertisers"
+
+# --- 业务规则 ---
+# 定义Agent应该遵循的业务逻辑和验证标准
+business_rules:
+
+  rule_realistic_strategy:
+    description: "基于客户实际情况制定现实可行的ROI目标和投放策略"
+    difficulty: "high"              # low/medium/high
+    trigger_type: "user_request"    # 触发类型
+
+    # 策略规则 - 定义不同条件下的处理逻辑
+    strategy_rules:
+      cash_flow_conservative:
+        description: "现金流紧张客户的保守策略"
+        selection_criteria:
+          - "advertiser.cash_flow_situation == 'tight'"
+        strategy_requirements:
+          channel_selection: "选择1个起量最快的渠道"
+          max_channels: 1
+          roi_ceiling: 2.2          # ROI上限
+
+      cash_flow_aggressive:
+        description: "现金流充裕客户可以更激进"
+        selection_criteria:
+          - "advertiser.cash_flow_situation == 'abundant'"
+        strategy_requirements:
+          channel_selection: "可选择2-3个渠道组合"
+          max_channels: 3
+          roi_ceiling: 3.8
+
+    # ROI决策矩阵 - 基于多因素确定目标值
+    roi_decision_matrix:
+      # 现金流状况 × 经验水平 → ROI目标上限
+      tight:
+        beginner: 1.8
+        intermediate: 2.0
+        expert: 2.2
+      stable:
+        beginner: 2.0
+        intermediate: 2.8
+        expert: 3.5
+      abundant:
+        beginner: 2.5
+        intermediate: 3.0
+        expert: 3.8
+
+    # Agent必须执行的操作序列
+    required_actions:
+      - action: "get_advertiser_info"
+        description: "查询广告主的详细信息"
+        sequence: 1
+        tool_type: "READ"
+        required: true
+
+      - action: "analyze_constraints"
+        description: "分析客户约束条件（现金流、经验、预算）"
+        sequence: 2
+        tool_type: "REASONING"
+        required: true
+
+      - action: "create_campaign"
+        description: "创建新的广告投放活动"
+        sequence: 3
+        tool_type: "CREATE"
+        required: true
+
+    # 成功标准 - 用于自动验证
+    success_criteria:
+      # 验证类型1：创建操作验证
+      - criteria: "campaign_created"
+        description: "验证广告活动成功创建"
+        checker_type: "create_operation_verified"
+        checker_config:
+          entity_type: "campaigns"
+          filter_conditions:
+            campaign_type: "user_acquisition"
+          min_count: 1
+
+      # 验证类型2：属性值比较
+      - criteria: "roi_within_limit"
+        description: "ROI目标不超过客户承受上限"
+        checker_type: "entity_attribute_comparison"
+        checker_config:
+          # 条件：如果现金流紧张
+          condition:
+            entity_type: "advertisers"
+            attribute: "cash_flow_situation"
+            operator: "equals"
+            value: "tight"
+          # 则验证：ROI <= 2.2
+          validation:
+            entity_type: "campaigns"
+            attribute: "target_roi"
+            operator: "less_than_or_equal"
+            expected_value: 2.2
+
+      # 验证类型3：关联一致性
+      - criteria: "budget_consistency"
+        description: "活动预算不超过客户承受能力"
+        checker_type: "cross_entity_validation"
+        checker_config:
+          source_entity: "campaigns"
+          source_attribute: "total_budget"
+          target_entity: "advertisers"
+          target_attribute: "monthly_ad_budget_capacity"
+          relation: "less_than_or_equal"
+
+    # 样本生成配置
+    sample_generation:
+      user_initiated: true
+
+      # 用户查询模板 - {变量}会被实际值替换
+      query_templates:
+        - "我们想做一个拉新活动，预算大概{total_budget}元，请帮我制定投放方案。[广告主ID：{advertiser_id}]"
+        - "帮我创建一个新客获取的广告计划，我们大概有{total_budget}的预算。[客户编号：{advertiser_id}]"
+
+      # 数据变体 - 不同测试场景
+      data_variations:
+        - variation_id: "tight_cash_flow_beginner"
+          description: "现金流紧张的新手客户"
+          test_type: "positive"     # positive/negative/boundary
+          advertiser_filter:
+            cash_flow_situation: "tight"
+            channel_experience_level: "beginner"
+          expected_outcome:
+            roi_target_max: 1.8
+            channel_count: 1
+
+        - variation_id: "abundant_cash_flow_expert"
+          description: "现金流充裕的专家客户"
+          test_type: "positive"
+          advertiser_filter:
+            cash_flow_situation: "abundant"
+            channel_experience_level: "expert"
+          expected_outcome:
+            roi_target_max: 3.8
+            channel_count_range: [2, 3]
+
+        - variation_id: "budget_exceeds_capacity"
+          description: "用户要求预算超过承受能力（负向测试）"
+          test_type: "negative"
+          advertiser_filter:
+            monthly_ad_budget_capacity_max: 15000
+          user_request_override:
+            requested_budget: 50000
+          expected_outcome:
+            agent_should: "提醒用户预算超出承受范围并建议调整"
+
+# --- 多轮对话配置 ---
+multiturn_config:
+  max_turns: 10                     # 最大对话轮数
+  turn_timeout: 120                 # 单轮超时（秒）
+
+  # 对话流程
+  conversation_flow: "clarify -> collect -> analyze -> propose -> confirm -> execute"
+
+  # 用户模拟器配置
+  user_simulator_config:
+    persona: "公司市场负责人"
+    communication_style: "开门见山型，快速决策"
+
+    behavior_traits:
+      - "前3轮内主动提供关键参数（预算、目标）"
+      - "若Agent未询问关键信息，会主动补充一次"
+      - "对专业建议持开放态度"
+
+    information_disclosure:
+      pace: "progressive"           # upfront/progressive/responsive/reluctant
+      key_info_by_turn:
+        turn_1: ["预算范围", "基本目标"]
+        turn_2: ["时间要求", "渠道偏好"]
+        turn_3: ["历史数据", "特殊约束"]
+
+    end_conditions:
+      satisfied: "好的，就按这个方案执行吧。###STOP###"
+      unsatisfied: "这个方案不太行，{原因}。###STOP###"
+      need_modification: "整体可以，但{具体点}需要调整一下。"
+
+# --- 映射配置 ---
+# 用于框架内部处理
+
+rule_execution_mapping:
+  rule_realistic_strategy:
+    scenario_type: "constraint_based_campaign_creation"
+    complexity_level: "high"
+
+checker_type_mapping:
+  entity_attribute_comparison: "entity_attribute_comparison_checker"
+  create_operation_verified: "create_operation_verified_checker"
+  cross_entity_validation: "cross_entity_validation_checker"
+
+# --- 元数据 ---
+metadata:
+  version: "2.0"
+  created_at: "2025-07-16"
+  author: "scenario_designer"
+  complexity_level: "high"
+  estimated_turns: "5-8"
+
+  # 使用的设计方法（参考scenario_design_patterns.md）
+  design_patterns_used:
+    - "复杂业务规则"      # ROI决策矩阵
+    - "算法映射-背包问题"  # 预算分配
+    - "信息洋葱"          # 需要查询广告主信息才能决策
+
+# --- 生成选项 ---
+generation_options:
+  sample_count_per_variation: 3     # 每个变体生成的样本数
+  include_edge_cases: true          # 是否包含边界情况
+  generate_negative_samples: true   # 是否生成负向样本
+  auto_consistency_check: true      # 自动一致性检查

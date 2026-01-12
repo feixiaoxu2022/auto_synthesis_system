@@ -1,0 +1,27 @@
+{
+  "scenario_id": "LA_ST_SICK_LEAVE_001",
+  "model": "glm-4.5",
+  "evaluation_file": "scenarios/office_administration/evaluation_outputs/glm-4_5/evaluation_results/LA_ST_SICK_LEAVE_001_evaluation_20251018_201900.json",
+  "failure_summary": "病假单创建成功，但未将EP_15病假余额从2扣减至0；assistant回复包含扣减完成与上传病例提醒，但final_state未更新。",
+  "analysis": {
+    "basic_metrics": {"total_turns": 1, "task_completion_rate": 0.0, "checker_pass_rate": 0.75},
+    "conversation_key_turns": [
+      {"turn": 2, "tool": "create_leave_application", "args_excerpt": "sick_leave 2天, approvers: [manager]", "result_excerpt": "leave_001"},
+      {"turn": 3, "tool": "update_employee_leave_balance", "args_excerpt": "sick_leave_balance: '0'", "result_excerpt": "参数类型错误"}
+    ],
+    "expectation_vs_actual": {"expected": "EP_15.sick=0", "actual": "EP_15.sick=2", "check_evidence": "entity_attribute_equals 期望0 实际2"}
+  },
+  "final_state_validation": {
+    "tool_boundary": "余额更新仅由update_employee_leave_balance负责",
+    "agent_calls": "错误的字符串参数导致写入失败",
+    "business_rules": "病假扣减需立即生效并提醒补充病例附件——提醒已给出，扣减未落库",
+    "conclusion": "Agent能力问题（Tool Use/执行完整性）"
+  },
+  "root_causes": [
+    {"type": "Agent能力问题", "dimension": ["Tool Use", "执行完整性"], "evidence": ["tool返回类型错误", "final_state未更新"], "reasoning": "未完成规则要求的扣减更新"}
+  ],
+  "improvements": [
+    {"area": "参数处理", "action": "对'0'等数值强制转int；失败时告知未更新而非宣称已更新", "owner": "模型侧", "priority": "P1"}
+  ]
+}
+

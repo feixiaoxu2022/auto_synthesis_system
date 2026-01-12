@@ -1,0 +1,886 @@
+# 智能广告投放 - 现实化ROI目标驱动的拉新广告系列创建场景
+# 基于真实业务实践，重点测试Agent基于实际约束制定可行投放策略的能力
+# 基于unified_scenario_template.yaml设计，确保架构一致性
+
+scenario_name: "智能广告投放 - 现实化ROI目标驱动的拉新系列创建"
+sub_scenario_type: "realistic_roi_targeted_campaign_creation"
+description: "用户基于真实业务情况提出拉新需求，Agent需要基于客户经验水平、行业特点、预算约束制定现实可行的投放策略"
+
+# 运行时配置
+runtime_config:
+  system_time: "2025-07-16T10:00:00Z"
+  timezone: "Asia/Shanghai"
+  current_date_description: "今天是2025年7月16日，当前时间是10:00，工作日上午是广告策略规划的黄金时段"
+
+# MCP服务配置
+mcp_service_config:
+  service_name: "ad_campaign_service"
+  service_description: "广告投放创建服务 - 基于实际业务约束的策略制定"
+  service_endpoint: "http://127.0.0.1:8405/mcp/"
+
+# 实体定义 - 数据池结构设计
+entities:
+  # 主实体 - 广告主/客户
+  advertisers:
+    display_name: "广告主"
+    description: "投放广告的客户主体，包含真实业务特征"
+    id_field: "advertiser_id"
+    sample_count: 15
+    
+    attributes:
+      # 基础信息
+      name:
+        type: "string"
+        description: "广告主公司名称"
+        
+      # 🔥 行业类型（决定渠道选择的核心因素）
+      industry:
+        type: "enum"
+        values: ["B2C_ecommerce", "B2B_saas", "education", "finance", "healthcare"]
+        description: "所属行业，直接影响渠道选择和ROI预期"
+        distribution: {"B2C_ecommerce": 0.4, "B2B_saas": 0.3, "education": 0.2, "finance": 0.1}
+        
+      # 客户等级
+      tier_level:
+        type: "enum"
+        values: ["startup", "growth", "enterprise"]
+        description: "公司发展阶段，影响预算规模和风险承受能力"
+        distribution: {"startup": 0.4, "growth": 0.4, "enterprise": 0.2}
+      
+      # 🔥 核心特征1：团队投放经验（决定ROI目标的关键因素）
+      channel_experience_level:
+        type: "enum"
+        values: ["beginner", "intermediate", "expert"]
+        description: "团队广告投放经验水平，直接影响ROI目标设定"
+        distribution: {"beginner": 0.4, "intermediate": 0.4, "expert": 0.2}
+        business_logic: "新手团队ROI目标应更保守，专家团队可以设定更高目标"
+      
+      # 🔥 核心特征2：现金流状况（决定预算策略的关键因素）
+      cash_flow_situation:
+        type: "enum"
+        values: ["tight", "stable", "abundant"]
+        description: "公司现金流状况，影响投放策略和风险承受度"
+        distribution: {"tight": 0.3, "stable": 0.5, "abundant": 0.2}
+        business_logic: "现金流紧张需要快速见效，充裕可以尝试长期策略"
+      
+      # 🔥 核心特征3：目标用户群体（影响渠道选择）
+      primary_target_audience:
+        type: "object"
+        description: "主要目标客户群体特征"
+        properties:
+          user_type: 
+            type: "enum"
+            values: ["consumers", "business_users", "professionals", "students"]
+          age_category:
+            type: "enum"
+            values: ["young_adults_18_35", "middle_aged_35_50", "mature_50_plus"]
+          decision_making_style:
+            type: "enum"
+            values: ["impulse_driven", "research_driven", "relationship_driven"]
+      
+        
+      monthly_ad_budget_capacity:
+        type: "float"
+        range: [8000, 50000]
+        description: "月度广告预算承受能力"
+        tier_based: {
+          "startup": [8000, 20000],
+          "growth": [15000, 35000],
+          "enterprise": [25000, 50000]
+        }
+      
+      
+      contact_email:
+        type: "string"
+        default: "marketing@example.com"
+        
+      registration_time:
+        type: "datetime"
+        description: "客户注册时间"
+    
+    relationships:
+      - has_many: "campaigns"
+
+  # 广告活动实体
+  campaigns:
+    display_name: "广告活动"
+    description: "创建的拉新广告活动"
+    id_field: "campaign_id"
+    sample_count: 18
+    
+    attributes:
+      campaign_name:
+        type: "string"
+        description: "活动名称"
+        
+      campaign_type:
+        type: "enum"
+        values: ["user_acquisition"]
+        description: "固定为用户获取类型"
+        default: "user_acquisition"
+      
+      # 🔥 现实化ROI目标（基于现金流+经验水平组合）
+      target_roi:
+        type: "float"
+        range: [1.8, 3.8]
+        description: "ROI目标，基于现金流状况和经验水平的分层矩阵设定"
+        cash_flow_experience_matrix: {
+          "tight": {
+            "beginner": 1.8,
+            "intermediate": 2.0,
+            "expert": 2.2
+          },
+          "stable": {
+            "beginner": 2.0,
+            "intermediate": 2.8,
+            "expert": 3.5
+          },
+          "abundant": {
+            "beginner": 2.5,
+            "intermediate": 3.0,
+            "expert": 3.8
+          }
+        }
+        validation_rule: "必须与advertiser的cash_flow_situation和channel_experience_level组合匹配"
+        
+      # 预算配置
+      total_budget:
+        type: "float"
+        range: [8000.0, 50000.0]
+        description: "总预算"
+        tier_based: {
+          "startup": [8000.0, 20000.0],
+          "growth": [15000.0, 35000.0],
+          "enterprise": [25000.0, 50000.0]
+        }
+      
+      
+      # 渠道预算分配（实际数据结构：channel_budgets对象）
+      channel_budgets:
+        type: "object"
+        description: "渠道预算分配对象，key为channel_id，value为预算金额"
+        properties:
+          channel_001: {"type": "float", "description": "Google渠道预算分配"}
+          channel_002: {"type": "float", "description": "Facebook渠道预算分配"}  
+          channel_003: {"type": "float", "description": "TikTok渠道预算分配"}
+          channel_004: {"type": "float", "description": "LinkedIn渠道预算分配"}
+        example: {"channel_001": 3000.0, "channel_002": 16800.0}
+      
+      
+      # 🔥 现实化策略类型
+      applied_strategy_type:
+        type: "enum"
+        values: ["cash_flow_conservative", "balanced_growth", "aggressive_scaling"]
+        description: "实际应用的策略类型，基于客户现实情况"
+      
+      # 预期表现（现实化）
+      expected_overall_roi:
+        type: "float"
+        range: [1.8, 4.0]
+        description: "预期整体ROI"
+        
+      # 测试预算预留
+      testing_reserve_budget:
+        type: "float"
+        range: [800.0, 5000.0]
+        description: "预留用于测试和优化的预算"
+        calculation: "total_budget * 0.10 to 0.20"
+      
+        
+      # 活动状态
+      status:
+        type: "enum"
+        values: ["draft", "pending_approval", "testing", "optimizing"]
+        description: "活动状态"
+        distribution: {"draft": 0.6, "pending_approval": 0.2, "testing": 0.15, "optimizing": 0.05}
+      
+      created_time:
+        type: "datetime"
+        description: "创建时间"
+        
+      advertiser_id:
+        type: "string"
+        description: "关联到advertisers"
+    
+    relationships:
+      - belongs_to: "advertisers"
+
+  # 渠道实体（基于实际业务特点）
+  channels:
+    display_name: "投放渠道"
+    description: "可选的广告投放渠道，包含真实业务特性"
+    id_field: "channel_id"
+    sample_count: 4
+    
+    attributes:
+      channel_name:
+        type: "enum"
+        values: ["google", "facebook", "tiktok", "linkedin"]
+        description: "渠道名称"
+      
+      # 可用状态
+      availability:
+        type: "enum"
+        values: ["available", "maintenance", "restricted"]
+        description: "渠道当前状态"
+        distribution: {"available": 0.90, "maintenance": 0.05, "restricted": 0.05}
+      
+      # 🔥 基于实际业务的渠道特性
+      startup_speed:
+        type: "enum"
+        values: ["fast", "medium", "slow"]
+        description: "起量速度，影响现金流紧张客户的选择"
+        channel_mapping: {
+          "google": "fast",      # 搜索广告起量最快
+          "facebook": "medium",  # 需要学习期
+          "tiktok": "slow",      # 内容型，需要更长测试期
+          "linkedin": "slow"     # B2B决策周期长
+        }
+        
+      business_suitability:
+        type: "array"
+        items: ["B2C_ecommerce", "B2B_saas", "education", "finance", "healthcare"]
+        description: "适合的业务类型"
+        channel_mapping: {
+          "google": ["B2C_ecommerce", "B2B_saas", "education", "finance", "healthcare"],
+          "facebook": ["B2C_ecommerce", "education", "healthcare"],
+          "tiktok": ["B2C_ecommerce"],
+          "linkedin": ["B2B_saas", "finance", "education"]
+        }
+      
+      # 现实的最低测试预算
+      min_testing_budget:
+        type: "float"
+        description: "获得有效测试数据的最低预算要求"
+        channel_mapping: {
+          "google": 3000.0,    # 搜索广告最低测试预算
+          "facebook": 3500.0,  # 社交媒体广告
+          "tiktok": 5000.0,    # 内容型广告需要更多预算
+          "linkedin": 4000.0   # B2B平台成本较高
+        }
+      
+      # 预期ROI范围（基于实际数据）
+      expected_roi_range:
+        type: "object"
+        description: "该渠道的真实ROI预期范围"
+        properties:
+          beginner: {"type": "object", "properties": {"min": {"type": "float"}, "max": {"type": "float"}}}
+          intermediate: {"type": "object", "properties": {"min": {"type": "float"}, "max": {"type": "float"}}}
+          expert: {"type": "object", "properties": {"min": {"type": "float"}, "max": {"type": "float"}}}
+        channel_mapping: {
+          "google": {
+            "beginner": {"min": 1.8, "max": 2.5},
+            "intermediate": {"min": 2.2, "max": 3.0},
+            "expert": {"min": 2.8, "max": 3.8}
+          },
+          "facebook": {
+            "beginner": {"min": 1.5, "max": 2.2},
+            "intermediate": {"min": 2.0, "max": 2.8},
+            "expert": {"min": 2.5, "max": 3.5}
+          },
+          "tiktok": {
+            "beginner": {"min": 1.2, "max": 2.0},
+            "intermediate": {"min": 1.8, "max": 2.8},
+            "expert": {"min": 2.5, "max": 4.0}
+          },
+          "linkedin": {
+            "beginner": {"min": 1.8, "max": 2.3},
+            "intermediate": {"min": 2.2, "max": 2.9},
+            "expert": {"min": 2.6, "max": 3.2}
+          }
+        }
+    
+    relationships:
+      - has_many: "campaigns"
+
+
+# 🔥 现实化业务规则：基于实际约束的策略制定规则
+business_rules:
+  rule_4_1:
+    description: "基于客户实际情况制定现实可行的ROI目标和投放策略"
+    difficulty: "high"
+    trigger_type: "user_request"
+    
+    # 🔥 现实化策略规则矩阵
+    realistic_strategy_rules:
+      
+      # 现金流紧张型客户策略
+      cash_flow_conservative:
+        description: "现金流紧张，需要快速见效的客户"
+        selection_criteria:
+          - "advertiser.cash_flow_situation == 'tight'"
+          - "advertiser.channel_experience_level in ['beginner', 'intermediate']"
+        
+        strategy_requirements:
+          channel_selection_rule: "选择1个起量最快的渠道（Google搜索优先）"
+          max_channels_limit: 1
+          roi_target_rule: "ROI目标设定保守（不超过2.2）"
+          budget_allocation_rule: "70%主投放，30%快速优化预留"
+          timeline_expectation: "60天内必须看到正向ROI"
+          preferred_channels: ["google"]
+        
+        validation_rules:
+          - "len(selected_channels) == 1"
+          - "target_roi <= 2.2"
+          - "'google' in selected_channels"
+          - "testing_reserve_budget >= total_budget * 0.30"
+          - "expected_breakeven_days <= 60"
+      
+      # 平衡增长型客户策略
+      balanced_growth:
+        description: "有稳定现金流，追求可控增长的客户"
+        selection_criteria:
+          - "advertiser.cash_flow_situation == 'stable'"
+          - "advertiser.total_budget >= 15000"
+        
+        strategy_requirements:
+          channel_selection_rule: "2个渠道组合，主次分明"
+          max_channels_limit: 2
+          roi_target_rule: "基于经验水平设定合理ROI目标"
+          budget_allocation_rule: "80/20分配策略，主渠道80%"
+          innovation_allowance: "可尝试1个相对较新的渠道"
+          
+        validation_rules:
+          - "len(selected_channels) == 2"
+          - "primary_channel_ratio >= 0.80"
+          - "target_roi matches experience_level expectations"
+          - "total_budget >= 15000"
+      
+      # 激进扩张型客户策略
+      aggressive_scaling:
+        description: "现金流充裕，追求快速规模化的客户"
+        selection_criteria:
+          - "advertiser.cash_flow_situation == 'abundant'"
+          - "advertiser.channel_experience_level in ['intermediate', 'expert']"
+        
+        strategy_requirements:
+          channel_selection_rule: "可选择2-3个渠道，包括创新渠道"
+          max_channels_limit: 3
+          roi_target_rule: "可以设定更高的ROI目标"
+          budget_allocation_rule: "允许更分散的投放测试"
+          risk_acceptance: "可接受更长的投资回收期"
+          
+        validation_rules:
+          - "len(selected_channels) >= 2 and len(selected_channels) <= 3"
+          - "target_roi >= 2.5"
+          - "total_budget >= 25000"
+    
+    # 🔥 基于行业的渠道匹配规则（硬约束）
+    industry_channel_matching_rules:
+      B2C_ecommerce:
+        required_channels: ["facebook"]  # 必须选择Facebook
+        optional_channels: ["google", "tiktok"]
+        avoid_channels: []
+        reason: "B2C电商必须选择Facebook（用户覆盖广），可搭配Google或TikTok"
+        
+      B2B_saas:
+        required_channels: ["google"]  # 必须选择Google
+        optional_channels: ["linkedin"]
+        avoid_channels: ["tiktok"]
+        reason: "B2B SaaS必须选择Google（专业性强），可搭配LinkedIn，避免TikTok"
+        
+      education:
+        required_channels: ["google"]  # 必须选择Google
+        optional_channels: ["facebook"]
+        avoid_channels: []
+        reason: "教育行业必须选择Google（内容权威性），可搭配Facebook"
+        
+      finance:
+        required_channels: ["google"]  # 必须选择Google
+        optional_channels: ["linkedin"]
+        avoid_channels: []
+        reason: "金融行业必须选择Google（专业可信度），可搭配LinkedIn"
+        
+      healthcare:
+        required_channels: ["google"]  # 必须选择Google
+        optional_channels: ["facebook"]
+        avoid_channels: []
+        reason: "医疗行业必须选择Google（权威性要求），可搭配Facebook"
+    
+    # 🔥 预算约束的客观规则
+    budget_constraint_rules:
+      minimum_viable_budget:
+        rule: "总预算必须满足至少1个渠道的有效测试"
+        validation: "total_budget >= max(selected_channels.min_testing_budget)"
+        
+      single_channel_threshold:
+        rule: "预算低于10000元建议单渠道集中"
+        validation: "if total_budget < 10000 then len(selected_channels) == 1"
+        reason: "小预算分散投放无法获得有效数据"
+        
+      multi_channel_requirement:
+        rule: "多渠道投放每个渠道必须满足最低测试预算"
+        validation: "for each channel: allocated_budget >= channel.min_testing_budget"
+        
+      testing_reserve_requirement:
+        rule: "必须预留10-30%预算用于优化调整"
+        validation: "testing_reserve_budget >= total_budget * 0.10"
+        reason: "没有优化预算无法基于数据调整策略"
+    
+    
+    # Agent执行步骤 - 基于MCP Tools  
+    required_actions:
+      - action: "get_advertiser_info"
+        description: "查询广告主的详细信息（行业、经验水平、现金流状况）"
+        sequence: 1
+        tool_type: "READ"
+        
+      - action: "get_channel_info"
+        description: "查询渠道信息和约束条件（起量速度、业务适用性、最低测试预算）"
+        sequence: 2
+        tool_type: "READ"
+        
+      
+      - action: "create_campaign"
+        description: "创建新的广告投放活动，应用基于约束的策略决策和用户反馈"
+        sequence: 3
+        tool_type: "CREATE"
+        
+      - action: "create_optimization_log"
+        description: "记录活动创建操作日志"
+        sequence: 4
+        tool_type: "CREATE"
+        
+      - action: "create_user_notification"
+        description: "发送活动创建完成通知"
+        sequence: 5
+        tool_type: "CREATE"
+    
+    required_parameters:
+      advertiser_id:
+        type: "string"
+        description: "广告主唯一标识符"
+        
+      total_budget:
+        type: "float"  
+        description: "总预算金额"
+        constraints: "必须满足最低测试预算要求"
+    
+    # 🔥 基于现有checker的原子化成功验证标准
+    success_criteria:
+      - criteria: "campaign_creation_verified"
+        description: "验证新的广告活动成功创建"
+        checker_type: "create_operation_verified"
+        checker_config:
+          entity_type: "campaigns"
+          filter_conditions:
+            campaign_type: "user_acquisition"
+          min_count: 1
+          
+      
+      - criteria: "user_notification_sent"
+        description: "验证发送了用户通知"
+        checker_type: "create_operation_verified"
+        checker_config:
+          entity_type: "user_notifications"
+          filter_conditions:
+            notification_type: "campaign_created"
+          min_count: 1
+          
+      - criteria: "operation_logged"
+        description: "验证记录了操作日志"
+        checker_type: "create_operation_verified"
+        checker_config:
+          entity_type: "optimization_logs"
+          filter_conditions:
+            operation_type: "campaign_creation"
+          min_count: 1
+      
+      - criteria: "realistic_strategy_application"
+        description: "Agent必须基于客户实际情况应用现实可行的策略"
+        verification_method: "atomic_constraint_validation"
+        
+        # 🔥 现金流约束的原子化验证
+        cash_flow_constraint_validations:
+          # 紧张现金流客户的约束验证
+          - validation_name: "tight_cash_flow_single_channel"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "advertisers"
+              entity_id: "[从用户输入获取]"
+              attribute: "cash_flow_situation"
+              operator: "equals"
+              expected_value: "tight"
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "channel_budgets"
+              operator: "dict_len_equals"
+              expected_value: 1
+              
+          - validation_name: "tight_cash_flow_conservative_roi"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "advertisers"
+              entity_id: "[从用户输入获取]"
+              attribute: "cash_flow_situation" 
+              operator: "equals"
+              expected_value: "tight"
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "target_roi"
+              operator: "less_than_or_equal"
+              expected_value: 2.2
+              
+          - validation_name: "tight_cash_flow_google_selected"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "advertisers"
+              entity_id: "[从用户输入获取]"
+              attribute: "cash_flow_situation"
+              operator: "equals"
+              expected_value: "tight"
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "channel_budgets.channel_001"  # Google = channel_001
+              operator: "greater_than"
+              expected_value: 0
+              
+          
+          # 充裕现金流客户的约束验证
+          - validation_name: "abundant_cash_flow_multi_channel"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "advertisers"
+              entity_id: "[从用户输入获取]"
+              attribute: "cash_flow_situation"
+              operator: "equals"
+              expected_value: "abundant"
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "channel_budgets"
+              operator: "dict_len_equals"
+              expected_value: 2
+              
+          - validation_name: "abundant_cash_flow_higher_roi"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "advertisers"
+              entity_id: "[从用户输入获取]"
+              attribute: "cash_flow_situation"
+              operator: "equals"
+              expected_value: "abundant"
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "target_roi"
+              operator: "greater_than_or_equal"
+              expected_value: 2.5
+        
+        # 🔥 经验水平约束的原子化验证
+        experience_level_validations:
+          - validation_name: "beginner_conservative_roi"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "advertisers"
+              entity_id: "[从用户输入获取]"
+              attribute: "channel_experience_level"
+              operator: "equals"
+              expected_value: "beginner"
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "target_roi"
+              operator: "equals"
+              expected_value: 2.0
+              
+          - validation_name: "expert_ambitious_roi"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "advertisers"
+              entity_id: "[从用户输入获取]"
+              attribute: "channel_experience_level"
+              operator: "equals"
+              expected_value: "expert"
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "target_roi"
+              operator: "greater_than_or_equal"
+              expected_value: 3.0
+      
+      # 🔥 行业渠道匹配的原子化验证
+      - criteria: "industry_channel_alignment"
+        description: "渠道选择必须符合行业特点和客观最佳实践"
+        verification_method: "atomic_industry_alignment"
+        
+        industry_matching_validations:
+          - validation_name: "B2B_saas_google_channel_selected"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "advertisers"
+              entity_id: "[从用户输入获取]"
+              attribute: "industry"
+              operator: "equals"
+              expected_value: "B2B_saas"
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "channel_budgets.channel_001"
+              operator: "greater_than"
+              expected_value: 0
+              
+          - validation_name: "B2C_ecommerce_visual_channel"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "advertisers"
+              entity_id: "[从用户输入获取]"
+              attribute: "industry"
+              operator: "equals"
+              expected_value: "B2C_ecommerce"
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "channel_budgets.channel_002"  # Facebook = channel_002
+              operator: "greater_than"
+              expected_value: 0
+              
+          - validation_name: "B2B_saas_avoid_tiktok"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "advertisers"
+              entity_id: "[从用户输入获取]"
+              attribute: "industry"
+              operator: "equals"
+              expected_value: "B2B_saas"
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "channel_budgets.channel_003"  # TikTok = channel_003
+              operator: "equals"
+              expected_value: 0
+      
+      # 🔥 预算约束的原子化验证
+      - criteria: "budget_constraint_compliance"
+        description: "预算分配必须满足实际可操作的最低要求"
+        verification_method: "atomic_budget_validation"
+        
+        budget_validations:
+          - validation_name: "sufficient_testing_budget"
+            checker_type: "entity_attribute_comparison"
+            entity_type: "campaigns"
+            entity_id: "latest_created"
+            attribute: "testing_reserve_budget"
+            operator: "greater_than_or_equal"
+            expected_value: 800
+            
+          - validation_name: "small_budget_single_channel"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "total_budget"
+              operator: "less_than"
+              expected_value: 10000
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "channel_budgets"
+              operator: "dict_len_equals"
+              expected_value: 1
+              
+          - validation_name: "google_channel_budget_sufficient"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "channel_budgets.channel_001"
+              operator: "greater_than"
+              expected_value: 0
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "channel_budgets.channel_001"
+              operator: "greater_than_or_equal"
+              expected_value: 3000
+              
+          - validation_name: "facebook_channel_budget_sufficient"
+            condition_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "channel_budgets.channel_002"
+              operator: "greater_than"
+              expected_value: 0
+            outcome_check:
+              checker_type: "entity_attribute_comparison"
+              entity_type: "campaigns"
+              entity_id: "latest_created"
+              attribute: "channel_budgets.channel_002"
+              operator: "greater_than_or_equal"
+              expected_value: 3500
+    
+    # 样本生成配置
+    sample_generation:
+      user_initiated: true
+      creation_scenario: "基于实际约束的现实化拉新策略制定"
+      
+      # 现实化用户请求模板 - 自然对话方式
+      query_templates:
+        - "我们想做一个拉新活动，预算大概{total_budget}元，请帮我制定投放方案。[广告主ID：{advertiser_id}]"
+        - "公司准备投{total_budget}元做用户获取，希望能给个专业的建议。[广告主ID：{advertiser_id}]"
+        - "计划花{total_budget}元做广告拉新，请根据我们的情况推荐合适的策略。[广告主ID：{advertiser_id}]"
+      
+      # 现实化的测试变体
+      data_variations:
+        - variation: "tight_cash_flow_beginner"
+          description: "现金流紧张的新手客户"
+          advertiser_config:
+            cash_flow_situation: "tight"
+            channel_experience_level: "beginner" 
+            total_budget_range: [8000, 12000]
+            industry: "B2C_ecommerce"
+          expected_strategy: "单渠道Facebook，ROI目标1.8，30%优化预留"
+          
+        - variation: "stable_intermediate_B2B"
+          description: "稳定现金流的B2B中等经验客户"
+          advertiser_config:
+            cash_flow_situation: "stable"
+            channel_experience_level: "intermediate"
+            total_budget_range: [18000, 25000]
+            industry: "B2B_saas"
+          expected_strategy: "Google+LinkedIn组合，ROI目标2.8，80/20分配"
+          
+        - variation: "abundant_expert_scaling"
+          description: "现金流充裕的专家级扩量客户"  
+          advertiser_config:
+            cash_flow_situation: "abundant"
+            channel_experience_level: "expert"
+            total_budget_range: [30000, 50000]
+            industry: "B2C_ecommerce"
+          expected_strategy: "多渠道组合，ROI目标3.8，创新渠道测试"
+      
+      # Agent职责（现实化）
+      agent_responsibilities:
+        - "准确识别客户的实际约束条件（现金流、经验、预算）"
+        - "基于经验水平设定现实可达的ROI目标"
+        - "根据行业特点选择最适合的渠道组合"
+        - "制定阶段化的预算分配和执行计划"
+        - "识别关键风险并提供应急调整方案"
+        - "确保策略在实际约束下可执行"
+      
+      expected_outcome:
+        type: "realistic_strategy_implementation"
+        scenario_classification: "constraint_based_campaign_creation"
+
+# Rule Engine执行配置
+rule_execution_mapping:
+  rule_4_1:
+    scenario_type: "constraint_based_campaign_creation"
+    explanation: "基于客户实际约束制定现实可行的拉新投放策略"
+    method_name: "_calculate_realistic_campaign_creation_logic"
+    expected_outcome_type: "realistic_strategy_implementation"
+    complexity_level: "high"
+
+# 检查器类型映射（仅使用现有checker，无需新增HITL专用checker）
+checker_type_mapping:
+  entity_attribute_comparison: "entity_attribute_comparison_checker"
+  create_operation_verified: "create_operation_verified_checker"
+  # 🔥 注意：HITL验证完全基于现有checker，无需新增专用验证器
+
+# 场景类型映射
+scenario_type_mapping:
+  "realistic_strategy_implementation": "constraint_based_campaign_creation"
+
+# 🔥 现实化策略配置矩阵
+realistic_strategy_config:
+  # 分层ROI矩阵（现金流状况 + 经验水平）
+  layered_roi_matrix:
+    tight:
+      beginner: 1.8
+      intermediate: 2.0
+      expert: 2.2
+    stable:
+      beginner: 2.0
+      intermediate: 2.8
+      expert: 3.5
+    abundant:
+      beginner: 2.5
+      intermediate: 3.0
+      expert: 3.8
+  
+  # 现金流状况 → 策略类型映射
+  cash_flow_strategy_mapping:
+    tight: "cash_flow_conservative"
+    stable: "balanced_growth"
+    abundant: "aggressive_scaling"
+  
+  # 行业 → 必选渠道映射（硬约束）
+  industry_required_channels:
+    B2C_ecommerce: ["channel_002"]  # 必须选择Facebook (channel_002)
+    B2B_saas: ["channel_001"]       # 必须选择Google (channel_001)
+    education: ["channel_001"]      # 必须选择Google (channel_001)
+    finance: ["channel_001"]        # 必须选择Google (channel_001)
+    healthcare: ["channel_001"]     # 必须选择Google (channel_001)
+  
+  # 渠道数量约束映射
+  channel_count_constraints:
+    small_budget_or_tight_cash: 1      # 小预算或现金流紧张：只能1个渠道
+    other_situations: [1, 2, 3]        # 其他情况：可以1-3个渠道
+
+# 一致性验证规则
+consistency_rules:
+  realistic_constraint_consistency:
+    - rule: "ROI目标必须与团队经验水平匹配"
+    - rule: "渠道选择必须符合行业特点"
+    - rule: "预算分配必须满足最低测试预算要求"
+    - rule: "现金流紧张客户必须选择起量快的渠道"
+  
+  budget_feasibility_consistency:
+    - rule: "总预算必须能支撑选择的渠道数量"
+    - rule: "每个渠道分配预算不得低于最低测试要求"
+    - rule: "必须预留足够的优化调整预算"
+  
+  timeline_expectation_consistency:
+    - rule: "现金流紧张客户的投资回收期预期更短"
+    - rule: "新手团队的优化周期应该更长"
+    - rule: "B2B业务的转化周期天然更长"
+
+# 场景元数据
+metadata:
+  version: "2.0"
+  sub_scenario_id: "constraint_based_campaign_creation"
+  template_type: "realistic_constraint_based_scenario"
+  complexity_level: "high"
+  based_on: "2024-2025年真实广告投放业务实践和市场数据"
+  design_principle: "现实约束驱动，客观验证标准，可执行策略"
+
+# Rule Engine代码生成配置  
+code_generation_config:
+  class_name: "RealisticCampaignCreationRuleEngine"
+  scenario_abbreviation: "RCC"
+  supported_entities: ["advertisers", "campaigns", "channels", "strategy_recommendations"]
+  
+  constraint_based_logic_support: true
+  realistic_roi_calculation_methods: true
+  industry_channel_matching_methods: true
+  
+  method_template: "_calculate_{method_name}_logic"
+  constraint_template: "_validate_{constraint_type}_constraint"
+  
+  default_error_response:
+    check_list: []
+    environment_description: "现实约束验证失败或策略不可行"
+
+# 生成选项
+generation_options:
+  sample_count_per_rule: 3  # 每种约束类型一个样本
+  include_edge_cases: true   # 包含边界约束情况
+  generate_negative_samples: false
+  auto_consistency_check: true
+  realistic_constraint_samples: true

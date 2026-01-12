@@ -1,0 +1,50 @@
+{
+  "rule_id": "3.1+6.1.general.silver.medium",
+  "description": "测试规则3.1+6.1：一般功能故障报修场景，白银用户中信用分(70-85)。骑行中报修时，Agent应该：1) 先将当前订单费用免除为0元；2) 创建维修工单；3) 根据silver用户等级和信用分等级发放相应金额的'无门槛骑行券'。",
+  "environment_conditions": {
+    "user": {
+      "user_loyalty_level": "silver",
+      "user_credit_score": [
+        {
+          "operator": ">=",
+          "value": 70
+        },
+        {
+          "operator": "<=",
+          "value": 85
+        }
+      ]
+    },
+    "order": {
+      "骑行状态": "进行中"
+    },
+    "bike": {
+      "is_faulty": true,
+      "last_maintenance_timestamp": {
+        "operator": "<",
+        "value": "now-24h",
+        "is_timestamp": true
+      }
+    }
+  },
+  "query_templates": [
+    "这车变速器有问题，换挡不顺{order_id}",
+    "轮胎没气了，骑起来很费劲{order_id}",
+    "链条掉了，无法继续骑行{order_id}",
+    "脚踏板松动了，踩着不稳{order_id}",
+    "车辆变速有问题，骑着不太对{order_id}",
+    "前轮胎气不足，影响骑行{order_id}",
+    "链条松了，骑行时有异响{order_id}",
+    "踏板有问题，踩着不舒服{order_id}",
+    "变速器卡住了，无法调节{order_id}",
+    "后轮胎扎了，需要维修{order_id}",
+    "链条生锈了，换挡困难{order_id}",
+    "脚踏板断裂，影响骑行安全{order_id}",
+    "轮胎磨损严重，骑行不稳{order_id}",
+    "变速功能失效，只能用一个档位{order_id}",
+    "链条断了，脚踏板空转{order_id}"
+  ],
+  "expected_outcome": {
+    "type": "report_general_fault_user_credit"
+  }
+}

@@ -1,0 +1,281 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "失败案例归因分析报告",
+  "description": "用于记录失败案例分析过程和结论的JSON格式定义",
+  "type": "object",
+  "required": [
+    "scenario_id",
+    "model",
+    "evaluation_file",
+    "failure_summary",
+    "analysis",
+    "final_state_validation",
+    "root_causes",
+    "improvements"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "description": "样本唯一标识符",
+      "examples": ["LA_ST_SICK_LEAVE_001", "MT_RCC_017_AGGRESSIVE"]
+    },
+    "scenario_type": {
+      "type": "string",
+      "description": "场景类型（可选，用于跨场景对比）",
+      "enum": ["office_administration", "ad_campaign", "github", "booking_system"]
+    },
+    "model": {
+      "type": "string",
+      "description": "被评测的模型名称",
+      "examples": ["gpt-4o", "glm-4.5", "gemini-2.5-pro"]
+    },
+    "evaluation_file": {
+      "type": "string",
+      "description": "评测结果文件路径（相对于工作目录）",
+      "examples": ["evaluation_outputs/evaluation/LA_ST_SICK_LEAVE_001_evaluation_*.json"]
+    },
+    "failure_summary": {
+      "type": "string",
+      "description": "失败情况简要总结（1-2句话）",
+      "minLength": 10,
+      "examples": ["病假单创建成功，但未将EP_15病假余额从2扣减至0；assistant回复包含扣减完成与上传病例提醒，但final_state未更新。"]
+    },
+    "analysis": {
+      "type": "object",
+      "description": "基础分析信息",
+      "required": ["basic_metrics", "conversation_key_turns", "expectation_vs_actual"],
+      "properties": {
+        "basic_metrics": {
+          "type": "object",
+          "description": "基础评测指标",
+          "required": ["total_turns", "task_completion_rate", "checker_pass_rate"],
+          "properties": {
+            "total_turns": {
+              "type": "integer",
+              "description": "对话总轮数",
+              "minimum": 1
+            },
+            "task_completion_rate": {
+              "type": "number",
+              "description": "任务完成率（0-1）",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "checker_pass_rate": {
+              "type": "number",
+              "description": "检查项通过率（0-1）",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        },
+        "conversation_key_turns": {
+          "type": "array",
+          "description": "关键对话轮次记录",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["turn"],
+            "properties": {
+              "turn": {
+                "type": "integer",
+                "description": "轮次编号",
+                "minimum": 1
+              },
+              "user": {
+                "type": "string",
+                "description": "用户发言内容（可选）"
+              },
+              "agent_response": {
+                "type": "string",
+                "description": "Agent回复摘要（可选）"
+              },
+              "tool": {
+                "type": "string",
+                "description": "调用的工具名称（如适用）"
+              },
+              "args_excerpt": {
+                "type": "string",
+                "description": "工具参数摘要"
+              },
+              "result_excerpt": {
+                "type": "string",
+                "description": "工具执行结果摘要"
+              },
+              "note": {
+                "type": "string",
+                "description": "分析备注"
+              }
+            }
+          }
+        },
+        "expectation_vs_actual": {
+          "type": "object",
+          "description": "期望vs实际对比",
+          "required": ["expected", "actual"],
+          "properties": {
+            "expected": {
+              "type": "string",
+              "description": "期望的结果"
+            },
+            "actual": {
+              "type": "string",
+              "description": "实际的结果"
+            },
+            "check_evidence": {
+              "type": "string",
+              "description": "验证证据（来自checker结果）"
+            }
+          }
+        }
+      }
+    },
+    "final_state_validation": {
+      "type": "object",
+      "description": "final_state验证分析（三层验证机制）",
+      "required": ["conclusion"],
+      "properties": {
+        "tool_boundary": {
+          "type": "string",
+          "description": "验证层1 - 工具职责边界：工具是否应负责该状态更新"
+        },
+        "agent_calls": {
+          "type": "string",
+          "description": "验证层2 - Agent操作完整性：Agent是否遗漏必要操作"
+        },
+        "business_rules": {
+          "type": "string",
+          "description": "验证层3 - 业务规则明确性：规则是否明确要求该操作"
+        },
+        "conclusion": {
+          "type": "string",
+          "description": "验证结论",
+          "examples": ["Agent能力问题（Tool Use/执行完整性）", "样本设计问题（规则未明确要求）"]
+        }
+      }
+    },
+    "user_simulator_validation": {
+      "type": "object",
+      "description": "用户模拟器行为验证（可选，但对话流程型场景建议填写）",
+      "properties": {
+        "prompt_setting": {
+          "type": "string",
+          "description": "user_simulator_prompt的关键设定"
+        },
+        "actual_behavior": {
+          "type": "string",
+          "description": "用户在对话中的实际行为"
+        },
+        "is_compliant": {
+          "type": "boolean",
+          "description": "用户行为是否符合prompt设定"
+        },
+        "conclusion": {
+          "type": "string",
+          "description": "验证结论"
+        }
+      }
+    },
+    "root_causes": {
+      "type": "array",
+      "description": "根本原因分析",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type", "dimension", "evidence", "reasoning"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "归因类型",
+            "enum": ["Agent能力问题", "样本设计问题", "用户模拟器执行问题", "系统问题"]
+          },
+          "dimension": {
+            "type": "array",
+            "description": "具体能力维度或问题细分",
+            "items": {
+              "type": "string"
+            },
+            "examples": [["Tool Use", "执行完整性"], ["信息收集"], ["规则遗漏"]]
+          },
+          "evidence": {
+            "type": "array",
+            "description": "支持该归因的具体证据",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            },
+            "examples": [["tool返回类型错误", "final_state未更新"]]
+          },
+          "reasoning": {
+            "type": "string",
+            "description": "推理过程：为什么这些证据支持该归因",
+            "minLength": 10,
+            "examples": ["未完成规则要求的扣减更新"]
+          }
+        }
+      }
+    },
+    "improvements": {
+      "type": "array",
+      "description": "改进建议",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["area", "action", "owner", "priority"],
+        "properties": {
+          "area": {
+            "type": "string",
+            "description": "改进领域",
+            "examples": ["参数处理", "业务规则遵循", "Checker配置"]
+          },
+          "action": {
+            "type": "string",
+            "description": "具体改进措施",
+            "minLength": 10,
+            "examples": ["对'0'等数值强制转int；失败时告知未更新而非宣称已更新"]
+          },
+          "owner": {
+            "type": "string",
+            "description": "负责方",
+            "enum": ["模型侧", "样本侧", "系统侧"]
+          },
+          "priority": {
+            "type": "string",
+            "description": "优先级",
+            "enum": ["P0", "P1", "P2"]
+          }
+        }
+      }
+    },
+    "key_learning_points": {
+      "type": "array",
+      "description": "关键学习点（可选，用于案例库）",
+      "items": {
+        "type": "string"
+      },
+      "examples": [["约束驱动型场景分析要点", "区分用户陈述vs用户期望"]]
+    },
+    "scenario_characteristics": {
+      "type": "object",
+      "description": "场景特征（可选，用于跨场景对比学习）",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["约束驱动型", "对话流程型"]
+        },
+        "complexity": {
+          "type": "string",
+          "enum": ["低", "中", "高"]
+        },
+        "key_constraints": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "tested_capabilities": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    }
+  }
+}

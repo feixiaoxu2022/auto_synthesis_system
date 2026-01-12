@@ -1,0 +1,64 @@
+{
+  "rule_id": "5.1",
+  "description": "测试规则5.1：主动关怀场景，用户有临期大额优惠券。Agent应该：1) 正常关锁计费；2) 主动提醒用户有即将过期的优惠券。",
+  "environment_conditions": {
+    "user": {
+      "user_loyalty_level": {
+        "operator": "in",
+        "value": [
+          "diamond",
+          "platinum"
+        ]
+      },
+      "coupons": {
+        "operator": "any_in_list",
+        "value": {
+          "expiry_date": [
+            {
+              "operator": ">=",
+              "value": "now-0d",
+              "is_timestamp": true
+            },
+            {
+              "operator": "<",
+              "value": "now+3d",
+              "is_timestamp": true
+            }
+          ],
+          "value": {
+            "operator": ">=",
+            "value": 10
+          }
+        }
+      }
+    },
+    "order": {
+      "骑行状态": "进行中",
+      "is_in_no_parking_zone": false
+    },
+    "bike": {
+      "is_faulty": false,
+      "is_in_no_parking_zone": false
+    }
+  },
+  "query_templates": [
+    "你好，我好像忘记锁车了，能帮我远程操作关一下吗？{order_id}",
+    "师傅你好，帮我处理下，我这边忘记关锁了，谢谢。{order_id}",
+    "麻烦远程关锁，我人已经离开了{order_id}",
+    "请协助结束骑行，忘记锁车了{order_id}",
+    "需要帮忙关锁，谢谢{order_id}",
+    "客服，帮我处理下关锁问题{order_id}",
+    "您好，我已经下车了，但是忘记锁车，现在还在计费中，能帮我远程关锁吗？{order_id}",
+    "麻烦帮我结束这个订单，忘记关锁了{order_id}",
+    "请帮我远程结束骑行{order_id}",
+    "不好意思，忘记锁车了，现在还在计费，请帮忙处理{order_id}",
+    "客服你好，我这边骑行已经结束了，但是需要远程关锁，麻烦协助处理一下{order_id}",
+    "麻烦客服帮个忙，我这边骑行完了想远程关锁，可以协助处理吗？{order_id}",
+    "帮我远程关锁，谢谢{order_id}",
+    "麻烦远程帮我结束行程{order_id}",
+    "能帮我远程关一下锁吗？{order_id}"
+  ],
+  "expected_outcome": {
+    "type": "proactive_care_coupon_reminder"
+  }
+}

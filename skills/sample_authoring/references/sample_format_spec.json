@@ -1,0 +1,227 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent评测样本格式规范（开源版）",
+  "description": "定义评测样本的扁平结构，所有生成的样本必须符合此规范",
+  "version": "4.0",
+
+  "type": "object",
+  "required": ["data_id", "query", "system", "servers", "environment", "check_list"],
+
+  "properties": {
+    "data_id": {
+      "type": "string",
+      "description": "样本唯一标识",
+      "pattern": "^[A-Z_]+_[0-9]{3}.*$",
+      "examples": ["BS_001", "OA_LA_001", "AD_001"]
+    },
+
+    "query": {
+      "type": "string",
+      "description": "用户首轮查询。如关联特定实体，格式：'请求内容\\n\\n[系统识别相关记录：xxx]'",
+      "minLength": 5
+    },
+
+    "system": {
+      "type": "string",
+      "description": "Agent系统提示词，包含完整业务规则",
+      "minLength": 100
+    },
+
+    "servers": {
+      "type": "array",
+      "items": {"type": "string"},
+      "minItems": 1,
+      "description": "依赖的MCP服务名称列表",
+      "examples": [["bikeshare_customer_service"], ["office_admin_service"]]
+    },
+
+    "environment": {
+      "type": "array",
+      "minItems": 1,
+      "description": "环境初始状态数据文件列表",
+      "items": {
+        "type": "object",
+        "required": ["path", "type", "content"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "数据文件路径",
+            "examples": ["users.jsonl", "orders.jsonl"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["file"],
+            "default": "file"
+          },
+          "content": {
+            "type": "string",
+            "description": "JSONL格式的文件内容，每行一条JSON记录"
+          }
+        }
+      }
+    },
+
+    "check_list": {
+      "type": "array",
+      "minItems": 1,
+      "description": "验证检查项列表",
+      "items": {
+        "type": "object",
+        "required": ["check_type", "params"],
+        "properties": {
+          "check_type": {
+            "type": "string",
+            "enum": [
+              "entity_attribute_equals",
+              "create_operation_verified",
+              "tool_called_with_params",
+              "tool_call_absence",
+              "prerequisite_check_performed",
+              "response_contains_keywords"
+            ]
+          },
+          "params": {
+            "type": "object",
+            "description": "检查器参数，结构因check_type而异"
+          },
+          "description": {
+            "type": "string",
+            "description": "检查项说明"
+          }
+        }
+      }
+    },
+
+    "user_simulator_prompt": {
+      "type": "string",
+      "description": "用户模拟器prompt（多轮场景必填）",
+      "required_sections": ["角色定义", "背景信息", "需求", "结束条件"],
+      "must_contain": "###STOP###"
+    },
+
+    "extension": {
+      "type": "object",
+      "description": "扩展字段，用于场景特定元数据",
+      "default": {}
+    }
+  },
+
+  "checker_params_spec": {
+    "_comment": "各Checker类型的params结构定义",
+
+    "entity_attribute_equals": {
+      "description": "验证实体属性等于预期值",
+      "params": {
+        "entity_type": {"type": "string", "required": true, "examples": ["orders", "users"]},
+        "target_id": {"type": "string", "required": true, "description": "目标实体ID"},
+        "attribute_key": {"type": "string", "required": true, "description": "属性名"},
+        "expected_value": {"type": "any", "required": true, "description": "期望值"}
+      }
+    },
+
+    "create_operation_verified": {
+      "description": "验证实体已创建（对比执行前后）",
+      "params": {
+        "entity_type": {"type": "string", "required": true, "examples": ["maintenance_tickets", "leave_applications"]},
+        "filter_conditions": {
+          "type": "object",
+          "required": false,
+          "description": "筛选条件（键值对）",
+          "example": {"status": "open"}
+        },
+        "min_count": {"type": "integer", "default": 1, "description": "最少创建数量"}
+      }
+    },
+
+    "tool_called_with_params": {
+      "description": "验证工具以正确参数被调用",
+      "params": {
+        "tool_name": {"type": "string", "required": true},
+        "expected_params": {
+          "type": "object",
+          "required": true,
+          "description": "期望的参数（null值表示通配符，接受任意值）",
+          "example": {"order_guid": "ord_001", "new_fee": null}
+        }
+      }
+    },
+
+    "tool_call_absence": {
+      "description": "验证指定工具未被调用",
+      "params": {
+        "forbidden_tools": {
+          "type": "array",
+          "items": {"type": "string"},
+          "required": true,
+          "example": ["issue_coupon", "adjust_order_fee"]
+        }
+      }
+    },
+
+    "prerequisite_check_performed": {
+      "description": "验证业务操作前执行了必要的前置检查",
+      "params": {
+        "prerequisite_tool": {"type": "string", "required": true, "description": "前置检查工具名"},
+        "business_tool": {"type": "string", "required": true, "description": "业务操作工具名"},
+        "related_entity_id": {"type": "string", "required": false, "description": "关联实体ID参数名"}
+      }
+    },
+
+    "response_contains_keywords": {
+      "description": "验证响应包含关键词",
+      "params": {
+        "expected_keywords": {
+          "type": "array",
+          "items": {"type": "string"},
+          "required": true,
+          "example": ["费用已调整", "订单"]
+        },
+        "use_llm_judge": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否使用LLM进行语义判断"
+        }
+      }
+    }
+  },
+
+  "example": {
+    "data_id": "BS_001",
+    "query": "我都快被气死了，锁怎么都关不上！\n\n[系统识别相关订单：ord_001]",
+    "system": "# 智能客服业务规则库\n\n你是一名专业的B端智能客服...",
+    "servers": ["bikeshare_customer_service"],
+    "environment": [
+      {
+        "path": "users.jsonl",
+        "type": "file",
+        "content": "{\"uuid\": \"usr_001\", \"name\": \"王晶\", \"user_loyalty_level\": \"gold\", \"user_credit_score\": 75}"
+      },
+      {
+        "path": "orders.jsonl",
+        "type": "file",
+        "content": "{\"order_guid\": \"ord_001\", \"user_uuid\": \"usr_001\", \"骑行状态\": \"进行中\", \"fee\": 4.5}"
+      }
+    ],
+    "check_list": [
+      {
+        "check_type": "entity_attribute_equals",
+        "params": {
+          "entity_type": "orders",
+          "target_id": "ord_001",
+          "attribute_key": "骑行状态",
+          "expected_value": "已结束"
+        },
+        "description": "校验点源于规则 标准流程：应成功为用户远程关锁。"
+      },
+      {
+        "check_type": "response_contains_keywords",
+        "params": {
+          "expected_keywords": ["理解", "抱歉"]
+        },
+        "description": "校验点源于规则 情绪安抚：应识别用户愤怒情绪并进行安抚。"
+      }
+    ],
+    "user_simulator_prompt": "## 角色定义\n你是用户王晶...\n\n## 结束条件\n当Agent成功处理你的问题时，输出 ###STOP###",
+    "extension": {}
+  }
+}

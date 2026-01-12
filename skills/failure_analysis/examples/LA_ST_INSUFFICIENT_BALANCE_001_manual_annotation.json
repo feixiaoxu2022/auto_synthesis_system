@@ -1,0 +1,32 @@
+{
+  "scenario_id": "LA_ST_INSUFFICIENT_BALANCE_001",
+  "model": "glm-4.5",
+  "evaluation_file": "scenarios/office_administration/evaluation_outputs/glm-4_5/evaluation_results/LA_ST_INSUFFICIENT_BALANCE_001_evaluation_20251018_200827.json",
+  "failure_summary": "年假余额不足(年假0, 调休2, 申请5天)。Agent提示余额不足并给替代方案，未创建申请；Checker却期望创建记录，导致失败。",
+  "analysis": {
+    "basic_metrics": {"total_turns": 1, "task_completion_rate": 0.0, "checker_pass_rate": 0.75},
+    "conversation_key_turns": [
+      {"turn": 1, "tool": "get_employee_info", "args_excerpt": "EP_41", "result_excerpt": "annual:0, comp:2"},
+      {"assistant": "回复包含关键词: 余额 不足，并建议2天调休+3天事假/调整天数"}
+    ],
+    "expectation_vs_actual": {
+      "expected": "余额不足不应创建年假申请，应提示替代方案",
+      "actual": "final_state.leave_applications=[]，与业务逻辑一致",
+      "check_evidence": "check_results: 期望≥1条创建，但实际0条；check_list中params存在expect_count:0与结果描述冲突"
+    }
+  },
+  "final_state_validation": {
+    "tool_boundary": "未触发创建/更新",
+    "agent_calls": "仅查询，按规则提示",
+    "business_rules": "年假扣减逻辑在年假不足时不可继续扣减，应提示处理",
+    "conclusion": "样本/系统问题（Checker配置或内部逻辑错误），Agent行为正确。"
+  },
+  "root_causes": [
+    {"type": "系统问题", "dimension": ["Checker准确性"], "evidence": ["check_results描述期望≥1与业务规则矛盾"], "reasoning": "应调整检查器：余额不足时不要求创建"}
+  ],
+  "improvements": [
+    {"area": "Checker逻辑", "action": "余额不足场景的create_operation_verified应期望0", "owner": "评测侧", "priority": "P0"},
+    {"area": "模板一致性", "action": "核对生成器确保此类场景默认不创建申请", "owner": "评测侧", "priority": "P1"}
+  ]
+}
+
