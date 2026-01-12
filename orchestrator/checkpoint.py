@@ -17,28 +17,20 @@ class Checkpoint:
     created_at: str
 
     # Orchestrator 状态
-    state: str
     user_requirement: str
     scenario_name: str
 
     # 产物
-    design_artifacts: Dict[str, str]
-    execution_artifacts: Dict[str, str]
+    artifacts: Dict[str, str]
 
-    # Step计数
-    init_iterations: int
-    execute_iterations: int
-
-    # Context
-    current_context: Dict[str, Any]
+    # 迭代计数
+    iterations: int
 
     # Agent 的 messages（用于恢复对话）
-    init_agent_messages: Optional[list] = None
-    execute_agent_messages: Optional[list] = None
+    agent_messages: Optional[list] = None
 
     # Agent 的内部状态（用于恢复标志位等）
-    init_agent_state: Optional[Dict[str, Any]] = None
-    execute_agent_state: Optional[Dict[str, Any]] = None
+    agent_state: Optional[Dict[str, Any]] = None
 
 
 class CheckpointManager:
@@ -119,43 +111,26 @@ class CheckpointManager:
             self._current_checkpoint_id = self._generate_id()
 
         # 获取 agent 的对话历史（序列化为可JSON保存的格式）
-        init_messages = None
-        execute_messages = None
-        init_state = None
-        execute_state = None
+        agent_messages = None
+        agent_state = None
 
-        if orchestrator.init_agent and hasattr(orchestrator.init_agent, '_conversation_history'):
-            init_messages = self._serialize_messages(orchestrator.init_agent._conversation_history)
-            # 保存InitAgent的内部状态
-            init_state = {
-                "_design_confirmed": getattr(orchestrator.init_agent, '_design_confirmed', False),
-                "_design_files_complete": getattr(orchestrator.init_agent, '_design_files_complete', False),
-            }
+        if orchestrator.agent and hasattr(orchestrator.agent, '_conversation_history'):
+            agent_messages = self._serialize_messages(orchestrator.agent._conversation_history)
 
-        if orchestrator.execute_agent and hasattr(orchestrator.execute_agent, '_conversation_history'):
-            execute_messages = self._serialize_messages(orchestrator.execute_agent._conversation_history)
-            # 保存ExecuteAgent的内部状态
-            execute_state = {
-                "_need_layer1_fix": getattr(orchestrator.execute_agent, '_need_layer1_fix', False),
-                "_layer1_context": getattr(orchestrator.execute_agent, '_layer1_context', {}),
-                "_samples_validation_reminded": getattr(orchestrator.execute_agent, '_samples_validation_reminded', False),
+            # 保存Agent的内部状态（通用，从ExecuteAgent继承）
+            agent_state = {
+                "_samples_validation_reminded": getattr(orchestrator.agent, '_samples_validation_reminded', False),
             }
 
         checkpoint = Checkpoint(
             checkpoint_id=self._current_checkpoint_id,
             created_at=datetime.now().isoformat(),
-            state=orchestrator.state.value,
             user_requirement=orchestrator.user_requirement,
             scenario_name=orchestrator.scenario_name,
-            design_artifacts=orchestrator.design_artifacts,
-            execution_artifacts=orchestrator.execution_artifacts,
-            init_iterations=orchestrator.init_iterations,
-            execute_iterations=orchestrator.execute_iterations,
-            current_context=orchestrator.current_context,
-            init_agent_messages=init_messages,
-            execute_agent_messages=execute_messages,
-            init_agent_state=init_state,
-            execute_agent_state=execute_state,
+            artifacts=orchestrator.artifacts,
+            iterations=orchestrator.iterations,
+            agent_messages=agent_messages,
+            agent_state=agent_state,
         )
 
         # 保存到文件
@@ -192,8 +167,7 @@ class CheckpointManager:
             data = json.load(f)
 
         # 向后兼容：补充新增字段的默认值
-        data.setdefault("init_agent_state", None)
-        data.setdefault("execute_agent_state", None)
+        data.setdefault("agent_state", None)
 
         self._current_checkpoint_id = data.get("checkpoint_id")
         return Checkpoint(**data)
@@ -206,53 +180,19 @@ class CheckpointManager:
             orchestrator: Orchestrator 实例
             checkpoint: Checkpoint 数据
         """
-        from .orchestrator import AgentPhase
-
-        # 状态映射（兼容旧版本checkpoint）
-        state_mapping = {
-            "init": "init",
-            "init_phase": "init",
-            "execute": "execute",
-            "execute_phase": "execute",
-            # 旧状态映射到合理的默认值
-            "failed": "execute",  # 失败通常发生在execute阶段
-            "completed": "execute",
-            "init_hitl": "init",
-            "layer1_hitl": "init",
-            "need_user_input": "execute",
-        }
-
-        state_value = checkpoint.state
-        if state_value not in [e.value for e in AgentPhase]:
-            # 使用映射表转换
-            mapped_state = state_mapping.get(state_value, "execute")
-            print(f"[Checkpoint] 旧状态 '{state_value}' 映射到 '{mapped_state}'")
-            state_value = mapped_state
-
-        orchestrator.state = AgentPhase(state_value)
         orchestrator.user_requirement = checkpoint.user_requirement
         orchestrator.scenario_name = checkpoint.scenario_name
-        orchestrator.design_artifacts = checkpoint.design_artifacts
-        orchestrator.execution_artifacts = checkpoint.execution_artifacts
-        orchestrator.init_iterations = checkpoint.init_iterations
-        orchestrator.execute_iterations = checkpoint.execute_iterations
-        orchestrator.current_context = checkpoint.current_context
+        orchestrator.artifacts = checkpoint.artifacts
+        orchestrator.iterations = checkpoint.iterations
 
         # 恢复 agent 的对话历史
-        if checkpoint.init_agent_messages and orchestrator.init_agent:
-            orchestrator.init_agent._conversation_history = checkpoint.init_agent_messages
-
-        if checkpoint.execute_agent_messages and orchestrator.execute_agent:
-            orchestrator.execute_agent._conversation_history = checkpoint.execute_agent_messages
+        if checkpoint.agent_messages and orchestrator.agent:
+            orchestrator.agent._conversation_history = checkpoint.agent_messages
 
         # 恢复 agent 的内部状态
-        if checkpoint.init_agent_state and orchestrator.init_agent:
-            for key, value in checkpoint.init_agent_state.items():
-                setattr(orchestrator.init_agent, key, value)
-
-        if checkpoint.execute_agent_state and orchestrator.execute_agent:
-            for key, value in checkpoint.execute_agent_state.items():
-                setattr(orchestrator.execute_agent, key, value)
+        if checkpoint.agent_state and orchestrator.agent:
+            for key, value in checkpoint.agent_state.items():
+                setattr(orchestrator.agent, key, value)
 
     def list_checkpoints(self) -> list:
         """列出所有 checkpoint"""
@@ -266,11 +206,9 @@ class CheckpointManager:
                     checkpoints.append({
                         "id": data.get("checkpoint_id"),
                         "created_at": data.get("created_at"),
-                        "state": data.get("state"),
                         "requirement": data.get("user_requirement", ""),
                         "scenario_name": data.get("scenario_name", ""),
-                        "init_iterations": data.get("init_iterations", 0),
-                        "execute_iterations": data.get("execute_iterations", 0),
+                        "iterations": data.get("iterations", 0),
                     })
             except Exception:
                 pass

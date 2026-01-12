@@ -1,5 +1,12 @@
 """
-Execute Agent - 负责执行、评测和优化（Layer 2-3-4）
+Scenario Builder Agent - 负责场景实现、样本合成、评测执行和失败分析
+
+基于设计好的场景配置（YAML、BusinessRules等），自动完成：
+- Step 1: 工具实现 (tools/)
+- Step 2: Checker实现 (checkers/)
+- Step 3: 样本合成 (samples/)
+- Step 4: 评测执行 (benchkit)
+- Step 5: 失败分析 (analysis/, 可选)
 
 工具集：file_reader, file_writer, file_editor, bash, use_skill
 使用独立tools模块实现
@@ -14,22 +21,24 @@ from tools import FileReader, FileWriter, FileEditor, BashExecutor, UseSkill, As
 from tools.validate_sample_format import validate_jsonl_file
 
 
-class ExecuteAgent(BaseAgent):
+class ScenarioBuilderAgent(BaseAgent):
     """
-    Execute Agent - 执行评测Agent
+    Scenario Builder Agent - 场景构建Agent
 
     职责:
-    - Layer 2: 组件生成（tools, checkers, data_pools）
-    - Layer 3: 样本合成
-    - Layer 4: 评测归因
+    - 基于场景配置文件（YAML、BusinessRules等）
+    - 自动完成工具实现、Checker编写、样本合成
+    - 执行评测并分析失败案例
+    - 提供改进建议
 
-    决策:
-    - 成功率>=85% → 完成
-    - Critical问题>30% → 返回Init
-    - 其他 → 继续下一个step
+    输入:
+    - 场景设计文档（unified_scenario_design.yaml, BusinessRules.md等）
+
+    输出:
+    - 完整的评测系统（tools/、checkers/、samples/、evaluation_outputs/）
     """
 
-    # Execute Agent的Context配置
+    # Scenario Builder Agent的Context配置
     # 注意：Bedrock claude-sonnet-4-5 实际限制是200K tokens，不是1M！
     DEFAULT_CONTEXT_CONFIG = ContextConfig(
         compact_threshold=120_000,  # 60% of 200K，留足buffer
